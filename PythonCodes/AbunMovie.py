@@ -9,12 +9,12 @@ import matplotlib.animation as manimation
 
 #Mesa specifics
 import mesaPlot as mp
-import mesa_reader as ms
+import mesa_reader as msr
 
 m=mp.MESA() #initialize mesaPlot instance to read and plot data
 
 #how to step through the .data sequence
-fold=ms.MesaLogDir() 
+fold=msr.MesaLogDir() 
 models = fold.model_numbers #get all available models from profiles.index
 
 FFMpegWriter = manimation.writers['ffmpeg']
