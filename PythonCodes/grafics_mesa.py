@@ -1,10 +1,11 @@
-import argparse as arp
-import numpy as np
-import mesa_reader as ms
-import re
+#import libraries
+import argparse as arp #command line parsing module and help
+import numpy as np 
+import mesa_reader as msr
+import re #regular expressions
 
-p=arp.ArgumentParser(prog='MESAplot',description='Script to plot data from the .data output files from MESA')
-p.add_argument('--version',action='version',version='%(prog)s 0.1')
+p=arp.ArgumentParser(prog='MESA_grafics',description='Script to plot data from the .data output files from MESA')
+p.add_argument('--version',action='version',version='%(prog)s 0.2')
 p.add_argument('files',metavar='FILES',help='Name of the .data type file/s with the extension',nargs='+')
 group=p.add_mutually_exclusive_group(required=True)
 group.add_argument('-hd','--headers',help='Show available headers in the files. Default: False',action='store_true',default=False)
@@ -24,13 +25,14 @@ pltpar.add_argument('-yl','--ylabel',help='Label of the y axis',type=str,default
 pltpar.add_argument('-x','--xaxis',help='Set the xaxis limits',nargs=2,type=float)
 pltpar.add_argument('-y','--yaxis',help='Set the yaxis limits',nargs=2,type=float)
 args=p.parse_args() #parse arguments
-if not(args.headers):
+
+if not(args.headers): #set plot variables and configuration
     if args.scale=='loglog':
         args.scale='logxy'
     l1=len(args.files)
     colo=['blue','black','red','green','yellow','cyan','magenta']*3 #set default colors
     colus=args.columns
-    if args.colors: #if flac -co present, overwrite default colors
+    if args.colors: #if flag -co present, overwrite default colors
         for colnum,col in enumerate(args.colors):
             colo[colnum]=col
 
@@ -49,21 +51,23 @@ legcount=0 #legend label counter
 fpat=re.compile(r'(?P<nom>[^/\.]+)\.') #regular expression to obtain the name of the file without extension
 for filecount,doc in enumerate(args.files): #loop over each file
     fd=open(doc,'r')
-    h=ms.MesaData(doc)
-    if args.headers:
+    h=msr.MesaData(doc)
+    if args.headers: #print headers
         print doc
-        print h.bulk_names
-    else:
-        docols=[col for col in re.split(',',colus[filecount])] 
+        for name1,name2,name3 in zip(h.bulk_names[::3],h.bulk_names[1::3],h.bulk_names[2::3]):
+            print '{:<30}{:<30}{:<}'.format(name1,name2,name3)
+        print '\n'
+    else: 
+        docols=[col for col in re.split(',',colus[filecount])] #get number of plots
         numplots=len(docols)-1
-        if args.legend:
+        if args.legend: #check legend labels
             leg=args.legend[legcount:numplots]
             legcount+=numplots
-        else:
+        else: #if unexistent, set legend labels to corresponent header
             leg=['']*numplots
             for numpl,pl in enumerate(docols[1:]):
                 leg[numpl]=pl
-        x=h.data(docols[0])
+        x=h.data(docols[0]) #set x values to first parsed column 
         if (args.mp or args.eps!='noeps'):
             for i in range(numplots):
                 y=h.data(docols[i+1])
@@ -71,6 +75,7 @@ for filecount,doc in enumerate(args.files): #loop over each file
                 colcount+=1
 if not(args.headers):
     if (args.mp or args.eps!='noeps'):
+        #set axis labels and limits
         graf.set_xlabel(args.xlabel)
         graf.set_ylabel(args.ylabel)
         if args.yaxis: 
@@ -78,22 +83,24 @@ if not(args.headers):
         if args.xaxis:
             graf.set_xlim(args.xaxis)
         if args.offset:
-            graf.yaxis.set_major_formatter(marques)
+            graf.yaxis.set_major_formatter(marques) #set y axis marker format
+        #set axis scale
         if (args.scale=='logx' or args.scale=='logxy'):
             graf.set_xscale('log')
         if (args.scale=='logy' or args.scale=='logxy'):
             graf.set_yscale('log')
+        #set title, grid and legend
         fig.suptitle(args.title)
         graf.grid(True)
         graf.legend(loc='best', prop=fnt.FontProperties(size='medium'),title=args.legtit)
-    if args.eps!='noeps':
-        if args.eps!='sieps':
-            seed=fpat.search(args.eps)
+    if args.eps!='noeps': #save figure
+        if args.eps!='sieps': #save figure with specified name, extension is checked
+            seed=fpat.search(args.eps) 
             if seed:
-                figname=seed.group('nom')+'.eps'
+                figname=seed.group('nom')+'.eps' 
             else:
-                figname=args.eps+'.eps'
-        else:
+                figname=args.eps+'.eps' 
+        else: #set figure name to input file name
             seed=fpat.search(args.files[0])
             if seed:
                 figname=seed.group('nom')+'.eps'
@@ -101,4 +108,4 @@ if not(args.headers):
                 figname=args.files[0]+'.eps'
         fig.savefig(figname, format='eps', dpi=1000)
     if args.mp:    
-        plt.show()
+        plt.show() #show figure
