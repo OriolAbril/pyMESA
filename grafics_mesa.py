@@ -3,6 +3,7 @@ import argparse as arp #command line parsing module and help
 import numpy as np 
 import mesa_reader as msr
 import re #regular expressions
+from itertools import izip_longest
 
 p=arp.ArgumentParser(prog='MESA_grafics',description='Script to plot data from the .data output files from MESA')
 p.add_argument('--version',action='version',version='%(prog)s 0.2')
@@ -54,8 +55,11 @@ for filecount,doc in enumerate(args.files): #loop over each file
     h=msr.MesaData(doc)
     if args.headers: #print headers
         print doc
-        for name1,name2,name3 in zip(h.bulk_names[::3],h.bulk_names[1::3],h.bulk_names[2::3]):
-            print '{:<30}{:<30}{:<}'.format(name1,name2,name3)
+        hd_names=sorted(h.bulk_names)
+        hd_4=len(hd_names)/4+1
+        for name1,name2,name3,name4 in izip_longest(hd_names[:hd_4],hd_names[hd_4:2*hd_4],hd_names[2*hd_4:3*hd_4],hd_names[3*hd_4:],fillvalue=''): #first descending and then to the right order
+        #for name1,name2,name3,name4 in izip_longest(hd_names[::4],hd_names[1::4],hd_names[2::4],hd_names[3::4],fillvalue=''): #first to the right then descending order
+            print '{:<30}{:<30}{:<30}{:<}'.format(name1,name2,name3,name4)
         print '\n'
     else: 
         docols=[col for col in re.split(',',colus[filecount])] #get number of plots
