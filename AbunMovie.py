@@ -36,9 +36,6 @@ models=m.prof_ind['model']
 try:
     m.loadProfile(num=models[0],silent=True)
     x=m.prof.data[args.xname]
-    if not(args.xlim):
-        xmin=min(x)
-        xmax=max(x)
 except (KeyError,AttributeError):
     raise ValueError(args.xname+"not found as data name")
 
@@ -46,15 +43,7 @@ fig=plt.figure(figsize=(12,12))
 ax=fig.add_axes([0.2,0.15,0.7,0.75])
 p=mp.plot()
 invert=False
-try:
-    p.plotAbun(m,show=False,fig=fig,ax=ax,xaxis=args.xname,xmin=xmin,xmax=xmax,show_title_age=args.age,ylabel=args.ylabel,title=args.title,xlabel=args.xlabel)
-except ValueError:
-    aux=xmax
-    xmax=xmin
-    xmin=aux
-    print xmin,xmax
-    p.plotAbun(m,show=False,fig=fig,ax=ax,xaxis=args.xname,xmin=xmin,xmax=xmax,show_title_age=args.age,ylabel=args.ylabel,title=args.title,xlabel=args.xlabel)
-    ax.invert_xaxis()
+p.plotAbun(m,show=False,fig=fig,ax=ax,xaxis=args.xname,xmin=xmin,xmax=xmax,show_title_age=args.age,ylabel=args.ylabel,title=args.title,xlabel=args.xlabel)
 
 xaxlim=ax.get_xlim()
 yaxlim=ax.get_ylim()
