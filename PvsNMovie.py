@@ -44,7 +44,7 @@ except (KeyError,AttributeError):
     raise ValueError(args.xname+"not found as data name")
 
 FFMpegWriter = manimation.writers['ffmpeg']
-metadata = dict(title='Isotopic abundances evolution in a ms 1M star', artist='Matplotlib')
+metadata = dict(title='Isotopic abundances evolution'+args.title, artist='Matplotlib')
 writer = FFMpegWriter(fps=5, metadata=metadata)
 
 
