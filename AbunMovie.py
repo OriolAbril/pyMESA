@@ -11,7 +11,7 @@ import matplotlib.animation as manimation
 import mesaPlot as mp
 
 p=arp.ArgumentParser(prog='AbunVideo',description='Script to generate videos from MESA profile files. It uses mesaPlot')
-p.add_argument('--version',action='version',version='%(prog)s 0.0')
+p.add_argument('--version',action='version',version='%(prog)s 0.1')
 par = arp.ArgumentParser(add_help=False,conflict_handler='resolve')
 par.add_argument('-t','--title',help='Title of the plot',default='',type=str)
 par.add_argument('-f','--filename',help='Name of the .mp4 created file',default='AbunMovie.mp4',type=str)
