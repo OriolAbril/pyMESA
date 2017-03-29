@@ -13,9 +13,10 @@ group.add_argument('-hd','--headers',help='Show available headers in the files. 
 group.add_argument('-c','--columns',help='Columns to be plotted, the first one will be used as x values. The separation between column  mes for the same file should be a comma and between different files a space.',nargs='+')
 p.add_argument('-s','--separator',help='Separator character/s or regular expression to match the separator',type=str,default=r'\s+')
 pltpar=p.add_argument_group(title='Commands to personalize plots')
-pltpar.add_argument('-mp',help='Do not show plot with matplotlib. Default: True',action='store_false',default=True)
+pltpar.add_argument('-pqg',help='Use PyQtGraph as plotting module instead of Matplotlib',action='store_true',default=False)
+pltpar.add_argument('-np',help='Do not show the plot. Default: False',action='store_true',default=False)
 pltpar.add_argument('-off','--offset',help='Use matplotlib''s default offest in y axis. Default: False',action='store_false',default=True)
-pltpar.add_argument('-eps',help='Write plot as an Encapsulated PostScript. The name can be specified',type=str,nargs='?',default='noeps',const='sieps')
+pltpar.add_argument('-eps',help='Write matplotlib plot as an Encapsulated PostScript. The name can be specified',type=str,nargs='?',default='noeps',const='sieps')
 pltpar.add_argument('-sc','--scale',help='Choose the scale between: liner, semilogy, semilogx or logxy',type=str,choices=['lin','logy','logx','loglog','logxy'])
 pltpar.add_argument('-co','--colors',help='Colors to be used in the plot, they must be valid matplotlib colors',nargs='+')
 pltpar.add_argument('-l','--legend',help='Labels for the legend. Default text is name of file without extension',nargs='+')
@@ -36,8 +37,10 @@ if not(args.headers): #set plot variables and configuration
     if args.colors: #if flag -co present, overwrite default colors
         for colnum,col in enumerate(args.colors):
             colo[colnum]=col
-
-    if (args.mp or args.eps!='noeps'): #import and initialize plot
+    mpl=(not(args.np) and not(args.pqg))
+    if (mpl or args.eps!='noeps'): #import and initialize matplotlib
+        import matplotlib
+        matplotlib.use('TKAgg')
         import matplotlib.font_manager as fnt
         import matplotlib.pyplot as plt
         if args.offset:
@@ -46,6 +49,29 @@ if not(args.headers): #set plot variables and configuration
         xlab=args.xlabel
         fig=plt.figure(1)
         graf=fig.add_axes([0.13,0.1, 0.8, 0.8])
+    if args.pqg: # import PyQtGraph if specified
+        import PyQt5
+        from pyqtgraph.Qt import QtGui, QtCore
+        import pyqtgraph as pqg
+        ## Switch to using white background and black foreground
+        #pqg.setConfigOption('background', 'w')
+        #pqg.setConfigOption('foreground', 'k')
+        app = QtGui.QApplication([]) # initialize Qt
+        mw = QtGui.QMainWindow() # initialize main window
+        mw.setWindowTitle('pyMESA') #set window title
+        # initialize widget and layout
+        cw = QtGui.QWidget()
+        mw.setCentralWidget(cw)
+        l = QtGui.QVBoxLayout()
+        cw.setLayout(l)
+        # create plot and add it to main widget
+        pw = pqg.PlotWidget(enableMenu=True)
+        l.addWidget(pw)
+        pw.setLabel('left',args.ylabel)
+        pw.setLabel('bottom', args.xlabel)
+        pw.setTitle(args.title)
+        pw.addLegend() # legend must be set here in order to be "filled"
+        pw.showGrid(x=True,y=True,alpha=0.5)
 
 colcount=0
 legcount=0 #legend label counter
@@ -72,13 +98,18 @@ for filecount,doc in enumerate(args.files): #loop over each file
             for numpl,pl in enumerate(docols[1:]):
                 leg[numpl]=pl
         x=h.data(docols[0]) #set x values to first parsed column 
-        if (args.mp or args.eps!='noeps'):
-            for i in range(numplots):
-                y=h.data(docols[i+1])
+        for i in range(numplots):
+            y=h.data(docols[i+1])
+            if args.pqg:
+                if args.colors:
+                    pw.plot(x,y,pen=pqt.mkPen(args.colors[colcount]),name=leg[i])
+                else:
+                    pw.plot(x,y,pen=(i,numplots),name=leg[i])
+            if (mpl or args.eps!='noeps'):
                 graf.plot(x,y,color=colo[colcount],label=leg[i])
-                colcount+=1
+            colcount+=1
 if not(args.headers):
-    if (args.mp or args.eps!='noeps'):
+    if (mpl or args.eps!='noeps'):
         #set axis labels and limits
         graf.set_xlabel(args.xlabel)
         graf.set_ylabel(args.ylabel)
@@ -111,5 +142,14 @@ if not(args.headers):
             else:
                 figname=args.files[0]+'.eps'
         fig.savefig(figname, format='eps', dpi=1000)
-    if args.mp:    
-        plt.show() #show figure
+    if not(args.np):
+        if args.pqg:
+            #qleg=pw.addLegend()
+            ## Display the widget as a new window
+            pw.update()
+            mw.show()
+
+            ## Start the Qt event loop
+            app.exec_()
+        else:    
+            plt.show() #show figure with matplotlib
