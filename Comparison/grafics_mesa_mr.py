@@ -1,13 +1,7 @@
-def file_len(fname):
-    with open(fname) as f:
-        for i, l in enumerate(f):
-            pass
-    return i + 1
-
 #import libraries
 import argparse as arp #command line parsing module and help
 import numpy as np 
-#import mesa_reader as msr
+import mesa_reader as msr
 import re #regular expressions
 from itertools import izip_longest
 
@@ -79,16 +73,14 @@ if not(args.headers): #set plot variables and configuration
         pw.addLegend() # legend must be set here in order to be "filled"
         pw.showGrid(x=True,y=True,alpha=0.5)
 
-import mesa as ms
 colcount=0
 legcount=0 #legend label counter
 fpat=re.compile(r'(?P<nom>[^/\.]+)\.') #regular expression to obtain the name of the file without extension
 for filecount,doc in enumerate(args.files): #loop over each file
-    length=file_len(doc)
-    hdr,cols,data=ms._read_mesafile(doc,length-6)
+    h=msr.MesaData(doc)
     if args.headers: #print headers
         print doc
-        hd_names=sorted(cols.keys())
+        hd_names=sorted(h.bulk_names)
         hd_4=len(hd_names)/4+1
         for name1,name2,name3,name4 in izip_longest(hd_names[:hd_4],hd_names[hd_4:2*hd_4],hd_names[2*hd_4:3*hd_4],hd_names[3*hd_4:],fillvalue=''): #first descending and then to the right order
         #for name1,name2,name3,name4 in izip_longest(hd_names[::4],hd_names[1::4],hd_names[2::4],hd_names[3::4],fillvalue=''): #first to the right then descending order
@@ -104,9 +96,9 @@ for filecount,doc in enumerate(args.files): #loop over each file
             leg=['']*numplots
             for numpl,pl in enumerate(docols[1:]):
                 leg[numpl]=pl
-        x=data[:,cols[docols[0]]-1].astype('float') #set x values to first parsed column 
+        x=h.data(docols[0]) #set x values to first parsed column 
         for i in range(numplots):
-            y=data[:,cols[docols[i+1]]-1].astype('float')
+            y=h.data(docols[i+1])
             if args.pqg:
                 if args.colors:
                     pw.plot(x,y,pen=pqt.mkPen(args.colors[colcount]),name=leg[i])
