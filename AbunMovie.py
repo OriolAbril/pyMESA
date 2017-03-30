@@ -3,7 +3,7 @@ import argparse as arp
 
 #Video & plot specifics
 import matplotlib
-matplotlib.use("Agg")
+matplotlib.use("TKAgg")
 import matplotlib.pyplot as plt
 import matplotlib.animation as manimation
 
@@ -69,8 +69,8 @@ axratio=ax.get_aspect()
 
 FFMpegWriter = manimation.writers['ffmpeg']
 metadata = dict(title='Isotopic abundances evolution'+args.title, artist='AbunVideo - Matplotlib')
-writer = FFMpegWriter(fps=5, metadata=metadata)
-with writer.saving(fig,args.filename,len(models)):
+writer = FFMpegWriter(fps=10, metadata=metadata)
+with writer.saving(fig,"movie.mp4",len(models)):
     for mod_no in models:
         ax.cla()
         m.loadProfile(num=mod_no)
