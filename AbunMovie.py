@@ -14,7 +14,7 @@ p=arp.ArgumentParser(prog='AbunVideo',description='Script to generate videos fro
 p.add_argument('--version',action='version',version='%(prog)s 0.1')
 par = arp.ArgumentParser(add_help=False,conflict_handler='resolve')
 par.add_argument('-t','--title',help='Title of the plot',default='',type=str)
-par.add_argument('-f','--filename',help='Name of the .mp4 created file',default='AbunMovie.mp4',type=str)
+par.add_argument('-fn','--filename',help='Name of the .mp4 created file',default='AbunMovie.mp4',type=str)
 par.add_argument('-age',help='Show star age in the title',action='store_true',default=False)
 par.add_argument('-xlim',help='Set the xaxis limits',nargs=2,type=float)
 par.add_argument('-ylim',help='Set the yaxis limits',nargs=2,type=float,default=[10**-3,1.0])
