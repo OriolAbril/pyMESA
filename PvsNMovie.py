@@ -13,7 +13,8 @@ import matplotlib.cm as cm
 import mesaPlot as mp
 
 p=arp.ArgumentParser(prog='PvsNVideo',description='Script to generate videos from MESA profile files. It uses mesaPlot')
-p.add_argument('--version',action='version',version='%(prog)s 0.0')
+p.add_argument('--version',action='version',version='%(prog)s 0.1')
+p.add_argument('-fn','--filename',help='Name of the generated video',type=str,default='PvsNAbunMovie.mp4')
 p.add_argument('-t','--title',help='Title of the plot',type=str,default='')
 p.add_argument('-age',help='Show star age in the title',action='store_true',default=False)
 p.add_argument('-xn','--xname',help='Name of the column to be used as x data',type=str,default='mass')
@@ -44,7 +45,7 @@ except (KeyError,AttributeError):
     raise ValueError(args.xname+"not found as data name")
 
 FFMpegWriter = manimation.writers['ffmpeg']
-metadata = dict(title='Isotopic abundances evolution'+args.title, artist='Matplotlib')
+metadata = dict(title='Isotopic abundances evolution'+args.title, artist='PvsNVideo - Matplotlib')
 writer = FFMpegWriter(fps=5, metadata=metadata)
 
 
@@ -65,7 +66,7 @@ cb=plt.get_cmap()
 cbar=cm.ScalarMappable(cmap=cb)
 clim=cbar.set_clim(vmin=cmin,vmax=cmax)
 
-with writer.saving(fig,"PvsNAbunMovie.mp4",len(models)):
+with writer.saving(fig,args.filename,len(models)):
     for mod_no in models:
         fig.clf()
         ax=fig.add_axes([0.2,0.15,0.7,0.75])

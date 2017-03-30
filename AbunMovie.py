@@ -55,7 +55,8 @@ ax=fig.add_axes([0.2,0.15,0.7,0.75])
 p=mp.plot()
 invert=False
 if args.which=='abun':
-    p.plotAbun(m,show=False,fig=fig,ax=ax,xaxis=args.xname,xmin=xmin,xmax=xmax,show_title_age=args.age,xlabel=args.xlabel,y1rng=args.ylim)
+    p.plotAbun(m,show=False,fig=fig,ax=ax,xaxis=args.xname,xmin=xmin,xmax=xmax,show_title_age=args.age,
+            xlabel=args.xlabel,y1rng=args.ylim)
 elif args.which=='byA':
     p.plotAbunByA(m,show=False,fig=fig,ax=ax,show_title_age=args.age,yrng=args.ylim)
 else:
@@ -67,7 +68,7 @@ yaxlim=ax.get_ylim()
 axratio=ax.get_aspect()
 
 FFMpegWriter = manimation.writers['ffmpeg']
-metadata = dict(title='Isotopic abundances evolution'+args.title, artist='Matplotlib')
+metadata = dict(title='Isotopic abundances evolution'+args.title, artist='AbunVideo - Matplotlib')
 writer = FFMpegWriter(fps=5, metadata=metadata)
 with writer.saving(fig,args.filename,len(models)):
     for mod_no in models:
@@ -75,7 +76,8 @@ with writer.saving(fig,args.filename,len(models)):
         m.loadProfile(num=mod_no)
         p=mp.plot()
         if args.which=='abun':
-            p.plotAbun(m,show=False,fig=fig,ax=ax,xaxis=args.xname,xmin=xmin,xmax=xmax,show_title_age=args.age,xlabel=args.xlabel,y1rng=args.ylim)
+            p.plotAbun(m,show=False,fig=fig,ax=ax,xaxis=args.xname,xmin=xmin,xmax=xmax,show_title_age=args.age,
+                    xlabel=args.xlabel,y1rng=args.ylim)
         elif args.which=='byA':
             p.plotAbunByA(m,show=False,fig=fig,ax=ax,show_title_age=args.age,yrng=args.ylim)
         else:
