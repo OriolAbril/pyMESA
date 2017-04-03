@@ -6,6 +6,7 @@ import multiprocessing as mpi
 #Video & plot 
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+import matplotlib.figure as mpfig
 
 #Mesa specifics
 import mesaPlot as mp
@@ -17,7 +18,8 @@ p.add_argument('-fn','--filename',help='Name of the generated video',type=str,de
 p.add_argument('-fps',help='Framerate of the generated video',type=int,default=10)
 p.add_argument('-mencoder',help='Use MEncoder to create video',action='store_true',default=False)
 p.add_argument('-t','--title',help='Title of the plot',type=str,default='')
-p.add_argument('-age',help='Show star age in the title',action='store_true',default=False)
+p.add_argument('-age',help='Show star age in the title',action='store_false',default=True)
+p.add_argument('-mod',help='Show model number in the title',action='store_false',default=True)
 p.add_argument('-xn','--xname',help='Name of the column to be used as x data',type=str,default='mass')
 p.add_argument('-xl','--xlabel',help='Label of the x axis',default=None)
 p.add_argument('-yl','--ylabel',help='Label of the y axis',default=None)
@@ -33,6 +35,7 @@ else:
     cmin=-5
     cmax=0
 
+os.system("mkdir _tmp_fold")
 
 m=mp.MESA() #initialize mesaPlot instance to read and plot data
 
@@ -50,26 +53,27 @@ fig1=plt.figure(1,figsize=(14,12))
 ax=fig1.add_axes([0.2,0.15,0.7,0.75])
 p=mp.plot()
 p._listAbun(m.prof)
-p.plotAbunPAndN(m,show=False,fig=fig1,ax=ax,show_title_age=args.age)
+p.plotAbunPAndN(m,show=False,fig=fig1,ax=ax,show_title_age=args.age,show_title_model=args.mod)
+fig1.suptitle(args.title)
 xb,xt=ax.get_xlim() #xbottom,xtop
 yb,yt=ax.get_ylim() #ybottom,ytop
 if args.lim:
-    xaxis=ax.set_xlim(amin,amax)
-    yaxis=ax.set_ylim(amin,amax)
+    xaxis=ax.set_xlim(args.lim[0],args.lim[1])
+    yaxis=ax.set_ylim(args.lim[0],args.lim[1])
 else:
     xaxis=ax.set_xlim(-0.5,max(xt,yt))
     yaxis=ax.set_ylim(-0.5,max(xt,yt))
 cb=plt.get_cmap()
 cbar=cm.ScalarMappable(cmap=cb)
 clim=cbar.set_clim(vmin=cmin,vmax=cmax)
-plt.savefig('_tmp%04d'%(1))
+plt.savefig('_tmp_fold/_tmp%04d'%(1))
 
-def _saveAbun(iterargs,mesaM=m,mesaP=p,f=args.folder,show_age=args.age,title=args.title,xaxis=xaxis,yaxis=yaxis,cmin=cmin,cmax=cmax):
+def _saveAbun(iterargs,mesaM=m,mesaP=p,f=args.folder,show_age=args.age,show_mod=args.mod,title=args.title,xaxis=xaxis,yaxis=yaxis,cmin=cmin,cmax=cmax):
     i,fig,model_number,thread_num=iterargs
     fig.clf()   
     ax=fig.add_axes([0.2,0.15,0.7,0.75])
     mesaM.loadProfile(num=model_number,f=f)
-    mesaP.plotAbunPAndN(m,show=False,fig=fig,ax=ax,show_title_age=show_age)
+    mesaP.plotAbunPAndN(m,show=False,fig=fig,ax=ax,show_title_age=show_age,show_title_model=show_mod)
     fig.suptitle(title)
     ax.set_xlim(xaxis)
     ax.set_ylim(yaxis)
@@ -77,8 +81,7 @@ def _saveAbun(iterargs,mesaM=m,mesaP=p,f=args.folder,show_age=args.age,title=arg
     cb=cm.get_cmap()
     cbar=cm.ScalarMappable(cmap=cb)
     clim=cbar.set_clim(vmin=cmin,vmax=cmax)
-    plt.figure(thread_num)
-    plt.savefig('_tmp%04d'%(i))
+    fig.savefig('_tmp_fold/_tmp%04d'%(i))
 
 i=2
 threads=np.arange(args.threads)
@@ -107,9 +110,9 @@ for mod_no in models[-args.threads+2:]:
 if args.mencoder:
     os.system("opt='vbitrate=2160000:mbd=2:keyint=132:v4mv:vqmin=3:vlelim=-4:vcelim=7:\
           lumi_mask=0.07:dark_mask=0.10:naq:vqcomp=0.7:vqblur=0.2:mpeg_quant'")
-    os.system("mencoder 'mf://_tmp*.png' -mf type=png:fps=%d \
+    os.system("mencoder 'mf://_tmp_fold/_tmp*.png' -mf type=png:fps=%d \
           -ovc lavc -lavcopts vcodec=mpeg4:vpass=1:$opt -oac copy -o %s" %(args.fps, args.filename))
 else:
-    ffmpeg='ffmpeg -framerate %d '%args.fps +'-i _tmp%04d.png '+args.filename
+    ffmpeg='ffmpeg -framerate %d '%args.fps +'-i _tmp_fold/_tmp%04d.png '+args.filename
     os.system(ffmpeg)
-os.system("rm -rf _tmp*.png")
+os.system("rm -rf _tmp_fold")

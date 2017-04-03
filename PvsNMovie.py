@@ -50,6 +50,7 @@ ax=fig.add_axes([0.2,0.15,0.7,0.75])
 p=mp.plot()
 p._listAbun(m.prof)
 p.plotAbunPAndN(m,show=False,fig=fig,ax=ax,show_title_age=args.age)
+p.setTitle(ax,show_title_model=False,show_title_age=args.age,model=1,age=m.prof.head["star_age"])
 xb,xt=ax.get_xlim() #xbottom,xtop
 yb,yt=ax.get_ylim() #ybottom,ytop
 if args.lim:
@@ -69,6 +70,7 @@ for i,mod_no in enumerate(models[1:]):
     m.loadProfile(num=mod_no)
     #p=mp.plot()
     p.plotAbunPAndN(m,show=False,fig=fig,ax=ax,show_title_age=args.age)
+    p.setTitle(ax,show_title_model=False,show_title_age=args.age,model=mod_no,age=m.prof.head["star_age"])
     fig.suptitle(args.title)
     ax.set_xlim(xaxis)
     ax.set_ylim(yaxis)
