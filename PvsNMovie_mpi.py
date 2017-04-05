@@ -32,7 +32,7 @@ p.add_argument('-xl', '--xlabel', help='Label of the x axis', default=None)
 p.add_argument('-yl', '--ylabel', help='Label of the y axis', default=None)
 p.add_argument('-lim', help='Set the axis limits, both axis have the same limits', nargs=2,
                type=float)
-p.add_argument('-clim', help='Set the colorbar limits', nargs=2, type=float, default=[0., -5.])
+p.add_argument('-clim', help='Set the colorbar limits', nargs=2, type=float, default=[1e-7, 1])
 p.add_argument('-threads', help='Nuber of threads', type=int, default=4)
 args = p.parse_args()  # parse arguments
 
@@ -45,7 +45,7 @@ m._loadProfileIndex(args.folder)
 models = m.prof_ind['model']
 
 try:
-    m.loadProfile(f=args.folder, num=models[0], silent=args.silent)
+    m.loadProfile(f=args.folder, num=models[0], silent=True)
     x = m.prof.data[args.xname]
 except (KeyError, AttributeError):
     raise ValueError(args.xname + "not found as data name")
@@ -58,7 +58,8 @@ fig1 = plt.figure(1, figsize=(14, 12))
 ax = fig1.add_axes([0.2, 0.15, 0.7, 0.75])
 p = mp.plot()
 p._listAbun(m.prof)
-p.plotAbunPAndN(m, show=False, fig=fig1, ax=ax, show_title_age=args.age, show_title_model=args.mod)
+p.plotAbunPAndN(m, show=False, fig=fig1, ax=ax, show_title_age=args.age, show_title_model=args.mod,
+                mass_frac_rng=args.clim)
 fig1.suptitle(args.title)
 xb, xt = ax.get_xlim()  # xbottom,xtop
 yb, yt = ax.get_ylim()  # ybottom,ytop
@@ -73,31 +74,24 @@ try:
     yaxis = ax.set_ylim(args.lim[0], args.lim[1])
 except TypeError:
     yaxis = ax.set_ylim(-0.5, max(xt, yt))
-cb = plt.get_cmap()
-cbar = cm.ScalarMappable(cmap=cb)
-clim = cbar.set_clim(vmin=args.clim[0], vmax=args.clim[1])
 plt.savefig('_tmp_fold/_tmp%04d' %(1))
 
 
 def _saveAbun(iterargs, mesaM=m, mesaP=p, f=args.folder, show_age=args.age, show_mod=args.mod,
-              title=args.title, xaxis=xaxis, yaxis=yaxis, cmin=args.clim[0], cmax=args.clim[1],
-              silent=args.silent):
+              title=args.title, xaxis=xaxis, yaxis=yaxis, clim=args.clim, silent=args.silent):
     i, fig, model_number, thread_num = iterargs
     fig.clf()
     ax = fig.add_axes([0.2, 0.15, 0.7, 0.75])
     mesaM.loadProfile(num=model_number, f=f, silent=silent)
     mesaP.plotAbunPAndN(m, show=False, fig=fig, ax=ax, show_title_age=show_age,
-                        show_title_model=show_mod)
+                        show_title_model=show_mod, mass_frac_rng=clim)
     fig.suptitle(title)
     ax.set_xlim(xaxis)
     ax.set_ylim(yaxis)
     ax.set_aspect('equal')
-    cb = cm.get_cmap()
-    cbar = cm.ScalarMappable(cmap=cb)
-    clim = cbar.set_clim(vmin=cmin, vmax=cmax)
     fig.savefig('_tmp_fold/_tmp%04d' %(i))
 
-i = 2
+i = 1
 threads = np.arange(args.threads)
 iterargs = [[i, fig1, models[i-1], 1]]
 for k in threads[1:]:
@@ -116,7 +110,7 @@ def abunIter(i, mod_no, threads=threads, iterargs=iterargs):
 iis = np.arange(i, len(models), args.threads)
 map(abunIter, iis[:-1], models[1:-args.threads:args.threads])
 i = iis[-1]
-
+print i
 for mod_no in models[-args.threads+2:]:
     try:
         mod_no = models[i-1]
