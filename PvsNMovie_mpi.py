@@ -26,8 +26,6 @@ p.add_argument('-age', help='Show star age in the title', action='store_false', 
 p.add_argument('-mod', help='Show model number in the title', action='store_false', default=True)
 p.add_argument('-s', '--silent', help='Do not print output on the terminal', action='store_true',
                default=False)
-p.add_argument('-xn', '--xname', help='Name of the column to be used as x data', type=str,
-               default='mass')
 p.add_argument('-xl', '--xlabel', help='Label of the x axis', default=None)
 p.add_argument('-yl', '--ylabel', help='Label of the y axis', default=None)
 p.add_argument('-lim', help='Set the axis limits, both axis have the same limits', nargs=2,
@@ -42,13 +40,9 @@ m = mp.MESA()  # initialize mesaPlot instance to read and plot data
 
 # find all profiles to import with mesaPlot
 m._loadProfileIndex(args.folder)
-models = m.prof_ind['model']
+profiles = m.prof_ind['profile']
 
-try:
-    m.loadProfile(f=args.folder, num=models[0], silent=True)
-    x = m.prof.data[args.xname]
-except (KeyError, AttributeError):
-    raise ValueError(args.xname + "not found as data name")
+m.loadProfile(f=args.folder, prof=profiles[0], silent=True)
 
 #def iterfun(k,i):
 
@@ -74,15 +68,14 @@ try:
     yaxis = ax.set_ylim(args.lim[0], args.lim[1])
 except TypeError:
     yaxis = ax.set_ylim(-0.5, max(xt, yt))
-plt.savefig('_tmp_fold/_tmp%04d' %(1))
 
 
 def _saveAbun(iterargs, mesaM=m, mesaP=p, f=args.folder, show_age=args.age, show_mod=args.mod,
               title=args.title, xaxis=xaxis, yaxis=yaxis, clim=args.clim, silent=args.silent):
-    i, fig, model_number, thread_num = iterargs
+    i, fig, thread_num = iterargs
     fig.clf()
     ax = fig.add_axes([0.2, 0.15, 0.7, 0.75])
-    mesaM.loadProfile(num=model_number, f=f, silent=silent)
+    mesaM.loadProfile(prof=i, f=f, silent=silent)
     mesaP.plotAbunPAndN(m, show=False, fig=fig, ax=ax, show_title_age=show_age,
                         show_title_model=show_mod, mass_frac_rng=clim)
     fig.suptitle(title)
@@ -91,33 +84,29 @@ def _saveAbun(iterargs, mesaM=m, mesaP=p, f=args.folder, show_age=args.age, show
     ax.set_aspect('equal')
     fig.savefig('_tmp_fold/_tmp%04d' %(i))
 
-i = 1
+i=profiles[0]
 threads = np.arange(args.threads)
-iterargs = [[i, fig1, models[i-1], 1]]
+iterargs = [[i, fig1, 1]]
 for k in threads[1:]:
-    iterargs.append([i+k, plt.figure(k+1, figsize=(14, 12)), models[i-1+k], k+1])
+    iterargs.append([i+k, plt.figure(k+1, figsize=(14, 12)), k+1])
 
-#for mod_no in models[1:-args.threads:args.threads]:
-def abunIter(i, mod_no, threads=threads, iterargs=iterargs):
+def abunIter(i, threads=threads, iterargs=iterargs):
     for k in threads:
         iterargs[k][0] = i+k
-        iterargs[k][2] = models[i-1+k]
     pool = mpi.Pool(processes=args.threads)
     pool.map(_saveAbun, iterargs)
     pool.close()
     pool.join()
     i += args.threads
-iis = np.arange(i, len(models), args.threads)
-map(abunIter, iis[:-1], models[1:-args.threads:args.threads])
-i = iis[-1]
-print i
-for mod_no in models[-args.threads+2:]:
+
+map(abunIter, profiles[:-args.threads:args.threads])
+residual=len(profiles) % args.threads
+
+for i in profiles[-residual:]:
     try:
-        mod_no = models[i-1]
-        _saveAbun([i, fig1, mod_no, 1])
+        _saveAbun([i, fig1, 1])
     except IndexError:
         break
-    i += 1
 
 if args.mencoder:
     os.system("opt='vbitrate=2160000:mbd=2:keyint=132:v4mv:vqmin=3:vlelim=-4:vcelim=7:\
