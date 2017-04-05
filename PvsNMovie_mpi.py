@@ -12,7 +12,7 @@ import matplotlib.figure as mpfig
 import mesaPlot as mp
 
 # Define command line arguments
-p = arp.ArgumentParser(prog='PvsNVideo', description='Script to generate videos from MESA profile
+p = arp.ArgumentParser(prog='PvsNVideo', description='Script to generate videos from MESA profile\
                        files. It uses mesaPlot')
 p.add_argument('--version', action='version', version='%(prog)s 0.1')
 p.add_argument('-dir', '--folder', help='Folder with the profile*.data files', type=str,
@@ -32,16 +32,9 @@ p.add_argument('-xl', '--xlabel', help='Label of the x axis', default=None)
 p.add_argument('-yl', '--ylabel', help='Label of the y axis', default=None)
 p.add_argument('-lim', help='Set the axis limits, both axis have the same limits', nargs=2,
                type=float)
-p.add_argument('-clim', help='Set the colorbar limits', nargs=2, type=float)
+p.add_argument('-clim', help='Set the colorbar limits', nargs=2, type=float, default=[0., -5.])
 p.add_argument('-threads', help='Nuber of threads', type=int, default=4)
 args = p.parse_args()  # parse arguments
-
-if args.clim:
-    cmin = args.clim[0]
-    cmax = args.clim[1]
-else:
-    cmin = - 5
-    cmax = 0
 
 os.system("mkdir _tmp_fold")
 
@@ -57,6 +50,10 @@ try:
 except (KeyError, AttributeError):
     raise ValueError(args.xname + "not found as data name")
 
+#def iterfun(k,i):
+
+#iterargs=map(iterfun,)
+
 fig1 = plt.figure(1, figsize=(14, 12))
 ax = fig1.add_axes([0.2, 0.15, 0.7, 0.75])
 p = mp.plot()
@@ -65,20 +62,26 @@ p.plotAbunPAndN(m, show=False, fig=fig1, ax=ax, show_title_age=args.age, show_ti
 fig1.suptitle(args.title)
 xb, xt = ax.get_xlim()  # xbottom,xtop
 yb, yt = ax.get_ylim()  # ybottom,ytop
-if args.lim:
-    xaxis = ax.set_xlim(args.lim[0], args.lim[1])
+try:
+    xmin = args.lim[0]
+    xmax = args.lim[1]
+except TypeError:
+    xmin = -0.5
+    xmax = max(xt, yt)
+xaxis = ax.set_xlim(xmin, xmax)
+try:
     yaxis = ax.set_ylim(args.lim[0], args.lim[1])
-else:
-    xaxis = ax.set_xlim(-0.5, max(xt, yt))
+except TypeError:
     yaxis = ax.set_ylim(-0.5, max(xt, yt))
 cb = plt.get_cmap()
 cbar = cm.ScalarMappable(cmap=cb)
-clim = cbar.set_clim(vmin=cmin, vmax=cmax)
+clim = cbar.set_clim(vmin=args.clim[0], vmax=args.clim[1])
 plt.savefig('_tmp_fold/_tmp%04d' %(1))
 
 
 def _saveAbun(iterargs, mesaM=m, mesaP=p, f=args.folder, show_age=args.age, show_mod=args.mod,
-              title=args.title, xaxis=xaxis, yaxis=yaxis, cmin=cmin, cmax=cmax, silent=args.silent):
+              title=args.title, xaxis=xaxis, yaxis=yaxis, cmin=args.clim[0], cmax=args.clim[1],
+              silent=args.silent):
     i, fig, model_number, thread_num = iterargs
     fig.clf()
     ax = fig.add_axes([0.2, 0.15, 0.7, 0.75])
@@ -104,10 +107,10 @@ for mod_no in models[1:-args.threads:args.threads]:
     for k in threads:
         iterargs[k][0] = i+k
         iterargs[k][2] = models[i-1+k]
-    p = mpi.Pool(processes=args.threads)
-    p.map(_saveAbun, iterargs)
-    p.close()
-    p.join()
+    pool = mpi.Pool(processes=args.threads)
+    pool.map(_saveAbun, iterargs)
+    pool.close()
+    pool.join()
     i += args.threads
 
 for mod_no in models[-args.threads+2:]:
@@ -123,10 +126,11 @@ if args.mencoder:
           lumi_mask=0.07:dark_mask=0.10:naq:vqcomp=0.7:vqblur=0.2:mpeg_quant'")
     os.system("mencoder 'mf://_tmp_fold/_tmp*.png' -mf type=png:fps=%d \
           -ovc lavc -lavcopts vcodec=mpeg4:vpass=1:$opt -oac copy -o %s" %(args.fps, args.filename))
-else:
-    ffmpeg = '' 
+else: 
+    silence=''
     if args.silent:
-        ffmpeg += '-nostats -loglevel 0 -hide_banner'
-    ffmpeg += 'ffmpeg -framerate %d '%args.fps +'-i _tmp_fold/_tmp%04d.png '+args.filename
+        silence = '-nostats -loglevel 0 -hide_banner '
+    ffmpeg = ''.join(['ffmpeg ', silence, '-framerate %d ' %args.fps, '-i _tmp_fold/_tmp%04d.png ',
+                      args.filename])
     os.system(ffmpeg)
 os.system("rm -rf _tmp_fold")
