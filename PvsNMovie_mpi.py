@@ -103,7 +103,8 @@ iterargs = [[i, fig1, models[i-1], 1]]
 for k in threads[1:]:
     iterargs.append([i+k, plt.figure(k+1, figsize=(14, 12)), models[i-1+k], k+1])
 
-for mod_no in models[1:-args.threads:args.threads]:
+#for mod_no in models[1:-args.threads:args.threads]:
+def abunIter(i, mod_no, threads=threads, iterargs=iterargs):
     for k in threads:
         iterargs[k][0] = i+k
         iterargs[k][2] = models[i-1+k]
@@ -112,6 +113,9 @@ for mod_no in models[1:-args.threads:args.threads]:
     pool.close()
     pool.join()
     i += args.threads
+iis = np.arange(i, len(models), args.threads)
+map(abunIter, iis[:-1], models[1:-args.threads:args.threads])
+i = iis[-1]
 
 for mod_no in models[-args.threads+2:]:
     try:
