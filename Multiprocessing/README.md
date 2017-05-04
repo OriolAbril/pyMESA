@@ -20,6 +20,7 @@ The performance comparison was done using two different sets of data. The first 
   - real  2m2.966s
   - user  4m11.132s
   - sys   0m24.684s
+
 The second set had 1420 profile.data files:
 - PvsNMovie:
   - real  16m21.470s
