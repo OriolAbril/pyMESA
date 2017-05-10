@@ -7,7 +7,6 @@ import re
 # Video & plot
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-import matplotlib.figure as mpfig
 
 # Mesa specifics
 import mesaPlot as mp
@@ -34,10 +33,10 @@ p.add_argument('-dir', '--folder', help='Folder with the profile*.data files', t
                default='LOGS')
 p.add_argument('-threads', help='Nuber of threads', type=int, default=4)
 par = arp.ArgumentParser(add_help=False, conflict_handler='resolve')
-par.add_argument('-age', help='Show star age in the title', action='store_false', default=True)
-par.add_argument('-mod', help='Show model number in the title', action='store_false', default=True)
+par.add_argument('-age', help='Do not show star age in the title', action='store_false', default=True)
+par.add_argument('-mod', help='Do not show model number in the title', action='store_false', default=True)
 par.add_argument('-s', '--silent', help='Do not print output on the terminal', action='store_true',
-               default=False)
+                 default=False)
 par.add_argument('-t', '--title', help='Title of the plot', default='', type=str)
 par.add_argument('-xlim', help='Set the xaxis limits', nargs=2, type=float)
 par.add_argument('-ylim', help='Set the yaxis limits', nargs=2, type=float)
