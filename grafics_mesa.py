@@ -28,7 +28,7 @@ pltpar.add_argument('-co','--colors',help='Colors to be used in the plot, they m
 pltpar.add_argument('-l','--legend',help='Labels for the legend. Default text is name of file without extension',nargs='+')
 pltpar.add_argument('-t','--title',help='Title of the plot',type=str,default='')
 pltpar.add_argument('-lt','--legtit',help='Title for the legend',type=str,default='')
-pltpar.add_argument('-xl','--xlabel',help='Label of the x axis',type=str,default='')
+pltpar.add_argument('-xl','--xlabel',help='Label of the x axis',type=str)
 pltpar.add_argument('-yl','--ylabel',help='Label of the y axis',type=str,default='')
 pltpar.add_argument('-x','--xaxis',help='Set the xaxis limits',nargs=2,type=float)
 pltpar.add_argument('-y','--yaxis',help='Set the yaxis limits',nargs=2,type=float)
@@ -98,7 +98,7 @@ for filecount,doc in enumerate(args.files): #loop over each file
         docols=[col for col in re.split(',',colus[filecount])] #get number of plots
         numplots=len(docols)-1
         if args.legend: #check legend labels
-            leg=args.legend[legcount:numplots]
+            leg=args.legend[legcount:legcount+numplots]
             legcount+=numplots
         else: #if unexistent, set legend labels to corresponent header
             leg=['']*numplots
@@ -118,7 +118,10 @@ for filecount,doc in enumerate(args.files): #loop over each file
 if not(args.headers):
     if (mpl or args.eps!='noeps'):
         #set axis labels and limits
-        graf.set_xlabel(args.xlabel)
+        if args.xlabel:
+            graf.set_xlabel(args.xlabel)
+        else:
+            graf.set_xlabel(docols[0])
         graf.set_ylabel(args.ylabel)
         if args.yaxis: 
             graf.set_ylim(args.yaxis)

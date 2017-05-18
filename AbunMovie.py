@@ -11,7 +11,7 @@ import matplotlib.cm as cm
 # Mesa specifics
 import mesaPlot as mp
 
-abunPat = re.compile('([a-z]{1,3})[0-9]{1,3}',re.IGNORECASE)
+abunPat = re.compile(r'([a-z]{1,3})[0-9]{1,3}$',re.IGNORECASE)
 def _getAbun(m,p,abunPat=abunPat):
     abundances = []
     for data_name in m.prof.data_names:
@@ -40,6 +40,8 @@ par.add_argument('-s', '--silent', help='Do not print output on the terminal', a
 par.add_argument('-t', '--title', help='Title of the plot', default='', type=str)
 par.add_argument('-xlim', help='Set the xaxis limits', nargs=2, type=float)
 par.add_argument('-ylim', help='Set the yaxis limits', nargs=2, type=float)
+par.add_argument('-de', '--decay', help='Decay isotopes to stable before plotting',
+                 action='store_true', default=False)
 mpar = arp.ArgumentParser(add_help=False, conflict_handler='resolve')
 mpar.add_argument('-xn', '--xname', help='Name of the column to be used as x data', type=str,
                   default='mass')
@@ -52,7 +54,7 @@ a = subp.add_parser('byA', help='Abundance of elements with atomic mass on the X
 a.set_defaults(which='byA', filename='AbunMovieByA.mp4', ylim=[1e-15, 1.5])
 s = subp.add_parser('byA-s', help='Abundance of elements with atomic mass on the X axis, normalized\
         to solar values', parents=[par])
-s.set_defaults(which='byA-s', filename='AbunMovieByA-S.mp4', ylim=[1e-2, 1e2])
+s.set_defaults(which='byA-s', filename='AbunMovieByA-S.mp4', ylim=[1e-6, 1e2])
 args = p.parse_args()  # parse arguments
 
 os.system("mkdir _tmp_fold")
@@ -72,7 +74,6 @@ if args.which=='abun':
 fig1 = plt.figure(1, figsize=(14, 12))
 ax1 = fig1.add_axes([0.2, 0.15, 0.7, 0.75])
 p = mp.plot()
-p._listAbun(m.prof)
 if args.which == 'abun':
     p.plotAbun(m, show=False, fig=fig1, ax=ax1, show_title_age=args.age, show_title_model=args.mod,
            y1rng=args.ylim, xaxis=args.xname)
@@ -84,7 +85,7 @@ else:
     p.set_solar('ag89')
     abundances=_getAbun(m,p)
     p.plotAbunByA(m, show=False, fig=fig1, ax=ax1, show_title_age=args.age, yrng=args.ylim,
-                  show_title_model=args.mod, stable=True, abun=abundances)
+                  show_title_model=args.mod, stable=args.decay, abun=abundances)
 fig1.suptitle(args.title)
 try:
     xmin = args.xlim[0]
@@ -128,13 +129,13 @@ elif args.which == 'byA':
         fig.savefig('_tmp_fold/_tmp%04d' %(i)) 
 else:
     def _saveAbun(iterargs, mesaM=m, mesaP=p, f=args.folder, show_age=args.age, show_mod=args.mod,
-                  title=args.title, xlim=xaxis, ylim=yaxis, silent=args.silent):
+                  title=args.title, xlim=xaxis, ylim=yaxis, silent=args.silent, stable=args.decay):
         i, fig, ax, thread_num = iterargs
         ax.cla()
         mesaM.loadProfile(prof=i, f=f, silent=silent)
         p.set_solar('ag89')
         mesaP.plotAbunByA(m, show=False, fig=fig, ax=ax, show_title_age=show_age,
-                          show_title_model=show_mod, stable=True)
+                          show_title_model=show_mod, stable=stable)
         fig.suptitle(title)
         ax.set_xlim(xlim)
         ax.set_ylim(ylim)
