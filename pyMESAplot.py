@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as manimation
 import matplotlib.text as mtxt
 import random
-from itertools import izip_longest
 
 def AbunMovieLive(p,m,profile_list=None,fps=10,filename='AbunMovie.mp4',
                   xaxis='mass',xmin=None,xmax=None,y1rng=[10**-4,1.0],cmap=plt.cm.gist_ncar,
@@ -125,23 +124,4 @@ def AbunMovieLive(p,m,profile_list=None,fps=10,filename='AbunMovie.mp4',
                           '-i _tmp_fold/_tmp%04d.png ',filename])
         os.system(ffmpeg)
         os.system("rm -rf _tmp_fold")
-
-def terminal_print(iterable, sort=True, order='descending'):
-    # the options for the descending parameter are descending or right.
-    # it sets the first order direction to the selected one
-    if sort:
-        iterable=sorted(iterable)
-    col_len=len(iterable)/4+1
-    if order=='descending':
-        for name1,name2,name3,name4 in izip_longest(iterable[:col_len], iterable[col_len:2*col_len], 
-                                                    iterable[2*col_len:3*col_len], iterable[3*col_len:], 
-                                                    fillvalue=''):
-            print '{:<30}{:<30}{:<30}{:<}'.format(name1,name2,name3,name4)
-        #first descending and then to the right order
-    if order=='right':
-        for name1,name2,name3,name4 in izip_longest(iterable[::4], iterable[1::4], 
-                                                    iterable[2::4], iterable[3::4], 
-                                                    fillvalue=''):
-        #first to the right then descending order
-            print '{:<30}{:<30}{:<30}{:<}'.format(name1,name2,name3,name4)
 

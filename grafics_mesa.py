@@ -1,17 +1,10 @@
-def file_len(fname):
-    with open(fname) as f:
-        for i, l in enumerate(f):
-            pass
-    return i+1
-
 # import libraries
 import argparse as arp  # command line parsing module and help
 import numpy as np 
 import re  # regular expressions
-from itertools import izip_longest
 import sys
 sys.path.append('/home/oriol/Documentos/pyMESA')
-import pyMESA as pym
+import pyMESAutils as pym
 
 p=arp.ArgumentParser(prog='MESA_grafics', description='Script to plot data from the .data output files from MESA')
 p.add_argument('--version', action='version', version='%(prog)s 0.2')
@@ -70,7 +63,6 @@ if not(args.headers):  # set plot variables and configuration
         if not(args.offset):
             import matplotlib.ticker as tk
             marques=tk.ScalarFormatter(useOffset=False)
-        xlab=args.xlabel
         fig=plt.figure(1)
         graf=fig.add_axes([0.13, 0.1, 0.8, 0.8])
     if args.pqg: # import PyQtGraph if specified
@@ -93,16 +85,26 @@ if not(args.headers):  # set plot variables and configuration
         l.addWidget(pw)
         pw.setLabel('left', args.ylabel)
         pw.setLabel('bottom', args.xlabel)
+        if args.xaxis:
+            pw.setRange(xRange=args.xaxis)
+            if args.xaxis[0]>args.xaxis[1]:
+                pw.invertX(True)
+        if args.yaxis:
+            pw.setRange(yRange=args.yaxis)
+            if args.yaxis[0]>args.yaxis[1]:
+                pw.invertY(True)
         pw.setTitle(args.title)
         pw.addLegend()  # legend must be set here in order to be "filled"
         pw.showGrid(x=True, y=True, alpha=0.5)
 
-import mesa as ms  # it is placed here in order to happen after importing matplotlib
+# it is placed here in order to happen after importing matplotlib
+import mesa as ms  
+
 colcount=0  # overall plot counter, used for color
 legcount=0  # legend label counter
 fpat=re.compile(r'(?P<nom>[^/\.]+)\.')  # regular expression to obtain the name of the file without extension
 for filecount, doc in enumerate(args.files): #loop over each file
-    length=file_len(doc)
+    length=pym.file_len(doc)
     hdr, cols, data=ms._read_mesafile(doc, length-6)
     if args.headers:  # print headers
         print doc
