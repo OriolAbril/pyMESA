@@ -15,6 +15,8 @@ group.add_argument('-hd', '--headers', help='Show available headers in the files
 group.add_argument('-c', '--columns', help='Columns to be plotted, the first one will be used as x values.\
                    The separation between columnes for the same file should be a comma and between different\
                    files a space.', nargs='+')
+p.add_argument('-tc', '--terminalcols', help='Number of columns to show the headers when using the -hd flag', 
+               type=int, default=4)
 p.add_argument('-s', '--separator', help='Separator character/s or regular expression to match the separator',
                type=str, default=r'\s+')
 pltpar=p.add_argument_group(title='Commands to personalize plots')
@@ -108,7 +110,7 @@ for filecount, doc in enumerate(args.files): #loop over each file
     hdr, cols, data=ms._read_mesafile(doc, length-6)
     if args.headers:  # print headers
         print doc
-        pym.terminal_print(cols.keys())
+        pym.terminal_print(cols.keys(),columns=args.terminalcols)
         print '\n'
     else: 
         docols=[col for col in re.split(',',args.columns[filecount])]  # get headers to plot
