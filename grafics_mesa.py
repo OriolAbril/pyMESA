@@ -100,7 +100,7 @@ if not(args.headers):  # set plot variables and configuration
         pw.showGrid(x=True, y=True, alpha=0.5)
 
 # it is placed here in order to happen after importing matplotlib
-import mesa as ms  
+from NuGridPy import mesa as ms  
 
 colcount=0  # overall plot counter, used for color
 legcount=0  # legend label counter
