@@ -10,17 +10,9 @@ import matplotlib.cm as cm
 
 # Mesa specifics
 import mesaPlot as mp
-
-abunPat = re.compile(r'([a-z]{1,3})[0-9]{1,3}$',re.IGNORECASE)
-def _getAbun(m,p,abunPat=abunPat):
-    abundances = []
-    for data_name in m.prof.data_names:
-        abunMatch = abunPat.match(data_name)
-        if abunMatch:
-            elem_name = abunMatch.groups(1)[0]
-            if elem_name in p.elements:
-                abundances.append(data_name)
-    return abundances
+import sys
+sys.path.append('/home/oriol/Documentos/pyMESA')
+import pyMESAutils as pym
 
 # Define command line arguments
 p = arp.ArgumentParser(prog='AbunVideo', description='Script to generate videos from MESA profile\
@@ -78,12 +70,12 @@ if args.which == 'abun':
     p.plotAbun(m, show=False, fig=fig1, ax=ax1, show_title_age=args.age, show_title_model=args.mod,
            y1rng=args.ylim, xaxis=args.xname)
 elif args.which=='byA':
-    abun=_getAbun(m,p)
+    abun=pym.getIsos(m.prof.data_names)
     p.plotAbunByA(m, show=False, fig=fig1, ax=ax1, show_title_age=args.age, yrng=args.ylim,
                   show_title_model=args.mod,abun=abun)
 else:
     p.set_solar('ag89')
-    abundances=_getAbun(m,p)
+    abundances=pym.getIsos(m.prof.data_names)
     p.plotAbunByA(m, show=False, fig=fig1, ax=ax1, show_title_age=args.age, yrng=args.ylim,
                   show_title_model=args.mod, stable=args.decay, abun=abundances)
 fig1.suptitle(args.title)

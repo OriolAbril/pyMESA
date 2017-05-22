@@ -1,5 +1,16 @@
 import numpy as np
 from itertools import izip_longest
+import re
+
+abunPat = re.compile(r'([a-z]{1,3})[0-9]{1,3}$',re.IGNORECASE)
+elements=['neut', 'h', 'he', 'li', 'be', 'b', 'c', 'n', 'o', 'f', 'ne', 'na', 'mg', 'al', 'si', 'p',
+        's', 'cl', 'ar', 'k', 'ca', 'sc', 'ti', 'v', 'cr', 'mn', 'fe', 'co', 'ni', 'cu', 'zn', 'ga',
+        'ge', 'as', 'se', 'br', 'kr', 'rb', 'sr', 'y', 'zr', 'nb', 'mo', 'tc', 'ru', 'rh', 'pd',
+        'ag', 'cd', 'in', 'sn', 'sb', 'te', 'i', 'xe', 'cs', 'ba', 'la', 'ce', 'pr', 'nd', 'pm',
+        'sm', 'eu', 'gd', 'tb', 'dy', 'ho', 'er', 'tm', 'yb', 'lu', 'hf', 'ta', 'w', 're', 'os',
+        'ir', 'pt', 'au', 'hg', 'tl', 'pb', 'bi', 'po', 'at', 'rn', 'fr', 'ra', 'ac', 'th', 'pa',
+        'u', 'np', 'pu', 'am', 'cm', 'bk', 'cf', 'es', 'fm', 'md', 'no', 'lr', 'rf', 'db', 'sg',
+        'bh', 'hs', 'mt', 'ds', 'rg', 'uub', 'uut', 'uuq', 'uup', 'uuh', 'uus', 'uuo']
 
 def terminal_print(iterable, sort=True, order='descending', columns=4):
     # the options for the descending parameter are descending or right.
@@ -46,3 +57,13 @@ def file_len(fname):
         for i, l in enumerate(f):
             pass
     return i+1
+
+def getIsos(checklist):
+    isos_list = []
+    for data_name in checklist:
+        abunMatch = abunPat.match(data_name)
+        if abunMatch:
+            elem_name = abunMatch.groups(1)[0]
+            if elem_name in elements:
+                isos_list.append(data_name)
+    return isos_list
