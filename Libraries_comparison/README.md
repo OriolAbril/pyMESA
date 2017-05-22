@@ -45,16 +45,16 @@ Computation time calculated with the same history file plotting log_H and log_LH
 The metalicity code is thought to analyze the metallicity of outer shells by reading all profile files. In this case, only mesaPlot 
 and NuGridPy were compared.
 - mesaPlot
-  - real  0m22.448s
-  - user  0m21.600s
-  - sys   0m0.696s
+  - real  0m22.448s; 8m17.514s
+  - user  0m21.600s; 4m56.112s
+  - sys   0m0.696s; 0m9.868s
 
 - NuGridPy
-  - real  0m9.117s
-  - user  0m8.708s
-  - sys   0m0.556s
+  - real  0m9.117s; 4m39.248s
+  - user  0m8.708s; 1m50.168s
+  - sys   0m0.556s; 0m5.248s
 
-In this case, as the number of files to be read are all profiles (in the comparison 100 files of around 1000 lines were read) instead 
+In this case, as the number of files to be read are all profiles (in the comparison 100 files of around 1000 lines were read in the firts case, and 1300 files were read in the second) instead 
 of only one file like in grafics_mesa.py, the computation times are much more rellevant.
  
 ## Conclusion
