@@ -54,6 +54,11 @@ and NuGridPy were compared.
   - user  0m8.708s; 1m50.168s
   - sys   0m0.556s; 0m5.248s
 
+- NuGridPy and multiprocessing
+  - real  0m5.118s
+  - user  0m8.740s
+  - sys   0m0.608s
+
 In this case, as the number of files to be read are all profiles (in the comparison 100 files of around 1000 lines were read in the firts case, and 1300 files were read in the second) instead 
 of only one file like in grafics_mesa.py, the computation times are much more rellevant.
  
