@@ -1,14 +1,17 @@
 # Comparison between libraries
 ## Motivation
 There are mainly three great python libraries that allow to load and work with MESA output files. Thus, as all can load data from the data 
-header name, a performance comparison between them can make grafics_mesa.py faster, which should be taken into account. 
+header name, a performance comparison between them can make grafics_mesa.py and other codes faster, which should be taken into account. 
  
 ## Results
 
 The results of executing the different codes with the `time` command before gave the following results for the different tasks that can 
-be performed by the code. All codes are thought to be used either for history or profile files independently and with the same exact syntax. 
+be performed by the code. 
 
-### Show data header names
+### grafics_mesa.py
+All codes are thought to be used either for history or profile files independently and with the same exact syntax. 
+
+#### Show data header names
 The computation time reading a history file of 3144 lines was:
 - [mesaPlot](https://github.com/rjfarmer/mesaplot) 
   - real	0m2.222s; 0m2.215s
@@ -23,7 +26,7 @@ The computation time reading a history file of 3144 lines was:
   - user	0m0.920s; 0m0.920s
   - sys	0m0.332s; 0m0.332s
 
-### Save .eps figure (using Matplotlib)
+#### Save .eps figure (using Matplotlib)
 Computation time calculated with the same history file plotting log_H and log_LH versus star_age, and using also the `-np` flag:
 - mesaPlot
   - real	0m2.570s; 0m2.680s
@@ -38,6 +41,22 @@ Computation time calculated with the same history file plotting log_H and log_LH
   - user	0m1.116s; 0m1.076s
   - sys	0m0.300s; 0m0.348s
 
+### metalicity.py
+The metalicity code is thought to analyze the metallicity of outer shells by reading all profile files. In this case, only mesaPlot 
+and NuGridPy were compared.
+- mesaPlot
+  - real  0m22.448s
+  - user  0m21.600s
+  - sys   0m0.696s
+
+- NuGridPy
+  - real  0m9.117s
+  - user  0m8.708s
+  - sys   0m0.556s
+
+In this case, as the number of files to be read are all profiles (in the comparison 100 files of around 1000 lines were read) instead 
+of only one file like in grafics_mesa.py, the computation times are much more rellevant.
+ 
 ## Conclusion
 It can be clearly seen that the fastest way to read mesa files is using NuGridPy. It does not mean that NuGridPy is automatically the 
 best because the functionalities of every package are deifferent, and in general, not all 3 will provide the same exact funcionality 
