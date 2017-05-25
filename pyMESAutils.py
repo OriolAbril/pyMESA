@@ -58,12 +58,18 @@ def file_len(fname):
             pass
     return i+1
 
+def checkElement(el):
+    if el in elements:
+        return True
+    else:
+        return False
+
 def getIsos(checklist):
     isos_list = []
     for data_name in checklist:
         abunMatch = abunPat.match(data_name)
         if abunMatch:
             elem_name = abunMatch.groups(1)[0]
-            if elem_name in elements:
+            if checkElement(elem_name):
                 isos_list.append(data_name)
     return isos_list

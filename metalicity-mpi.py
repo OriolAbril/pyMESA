@@ -57,7 +57,7 @@ def getZ(mod_num, profs=profs, start=start, end=end):
     age=hdr['star_age']
     return age,Z
 
-pool = mpi.Pool(processes=threads)
+pool= mpi.Pool(processes=threads)
 result=pool.map(getZ, models)
 pool.close()
 pool.join()
@@ -65,4 +65,4 @@ pool.join()
 agevec[:]=[a[0] for a in result]
 Zvec[:]=[a[1] for a in result]
 plt.plot(agevec,Zvec)
-plt.show()
+#plt.show()

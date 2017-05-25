@@ -61,4 +61,4 @@ for i,mod_num in enumerate(models):
     agevec[i]=line3list[line2list.index('star_age')]
 
 plt.plot(agevec,Zvec)
-plt.show()
+#plt.show()

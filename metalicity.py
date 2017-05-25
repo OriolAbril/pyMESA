@@ -56,4 +56,4 @@ for i,mod_num in enumerate(models):
     agevec[i]=hdr['star_age']
 
 plt.plot(agevec,Z1vec)
-plt.show()
+#plt.show()
