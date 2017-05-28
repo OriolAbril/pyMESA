@@ -15,14 +15,15 @@ elements=['neut', 'h', 'he', 'li', 'be', 'b', 'c', 'n', 'o', 'f', 'ne', 'na', 'm
 def terminal_print(iterable, sort=True, order='descending', columns=4):
     # the options for the descending parameter are descending or right.
     # it sets the first order direction to the selected one
-    # the number of columns can only be 4,5
+    # the number of columns can only be 1,4,5
     if sort:
         iterable=sorted(iterable)
     col_len=len(iterable)/columns*np.arange(1,columns)
     for i in range(len(iterable)%columns):
         col_len[i:]+=1
-    print len(iterable)
-    print col_len
+    if columns==1:
+        for name in iterable:
+            print name
     if columns==4:
         if order=='descending':
             for name1,name2,name3,name4 in izip_longest(iterable[:col_len[0]],

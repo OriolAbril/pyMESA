@@ -7,18 +7,20 @@ sys.path.append('/home/oriol/Documentos/pyMESA')
 import pyMESAutils as pym
 
 p=arp.ArgumentParser(prog='MESA_grafics', description='Script to plot data from the .data output files from MESA')
-p.add_argument('--version', action='version', version='%(prog)s 0.2')
+p.add_argument('--version', action='version', version='%(prog)s 0.3')
 p.add_argument('files', metavar='FILES', help='Name of the .data type file/s with the extension', nargs='+')
 group=p.add_mutually_exclusive_group(required=True)
-group.add_argument('-hd', '--headers', help='Show available headers in the files. Default: False', 
-                   action='store_true', default=False)
 group.add_argument('-c', '--columns', help='Columns to be plotted, the first one will be used as x values.\
                    The separation between columnes for the same file should be a comma and between different\
                    files a space.', nargs='+')
-p.add_argument('-tc', '--terminalcols', help='Number of columns to show the headers when using the -hd flag', 
-               type=int, default=4)
-p.add_argument('-s', '--separator', help='Separator character/s or regular expression to match the separator',
-               type=str, default=r'\s+')
+group.add_argument('-hd', '--headers', help='Show available headers in the files. Default: False', 
+                   action='store_true', default=False)
+hdpar=p.add_argument_group(title='Commands to personalize the headers output')
+hdpar.add_argument('-tc', '--terminalcols', help='Number of columns to show the headers when using the -hd flag', 
+                   type=int, default=4, choices=[1, 4, 5])
+hdpar.add_argument('-o', '--order', help='Choose fist direction to sort the names, either first descending and\
+                   then to the right (default) or viceversa', type=str, default='descending', 
+                   choices=['d', 'descending', 'r', 'right'])
 pltpar=p.add_argument_group(title='Commands to personalize plots')
 pltpar.add_argument('-pqg', help='Use PyQtGraph as plotting module instead of Matplotlib', action='store_true',
                     default=False)
@@ -31,17 +33,22 @@ pltpar.add_argument('-sc', '--scale', help='Choose the scale between: liner, sem
                     type=str, choices=['lin', 'logy', 'logx', 'loglog', 'logxy'])
 pltpar.add_argument('-co', '--colors', help='Colors to be used in the plot, they must be valid matplotlib colors',
                     nargs='+')
-pltpar.add_argument('-l', '--legend', help='Labels for the legend. Default text is name of file without extension',
-                    nargs='+')
 pltpar.add_argument('-t', '--title', help='Title of the plot', type=str, default='')
 pltpar.add_argument('-lt', '--legtit', help='Title for the legend', type=str, default='')
+pltpar.add_argument('-l', '--legend', help='Labels for the legend. Default text is name of file without extension',
+                    nargs='+')
 pltpar.add_argument('-xl', '--xlabel', help='Label of the x axis', type=str)
 pltpar.add_argument('-yl', '--ylabel', help='Label of the y axis', type=str, default='')
 pltpar.add_argument('-x', '--xaxis', help='Set the xaxis limits', nargs=2, type=float)
 pltpar.add_argument('-y', '--yaxis', help='Set the yaxis limits', nargs=2, type=float)
 args=p.parse_args()  # parse arguments
 
-if not(args.headers):  # set plot variables and configuration
+if args.headers: # set variables for header mode
+    if args.order=='d':
+        args.order='descending'
+    if args.order=='r':
+        args.order='right'
+else: # set plot variables and configuration
     if len(args.files)!=len(args.columns):
         args.columns=[args.columns[0]]*len(args.files)
     allplots=0
@@ -110,10 +117,10 @@ for filecount, doc in enumerate(args.files): #loop over each file
     hdr, cols, data=ms._read_mesafile(doc, length-6)
     if args.headers:  # print headers
         print doc
-        pym.terminal_print(cols.keys(),columns=args.terminalcols)
+        pym.terminal_print(pym.getIsos(cols.keys()), columns=args.terminalcols, order=args.order)
         print '\n'
     else: 
-        docols=[col for col in re.split(',',args.columns[filecount])]  # get headers to plot
+        docols=[col for col in re.split(',', args.columns[filecount])]  # get headers to plot
         numplots=len(docols)-1
         if args.legend:  # check legend labels
             leg=args.legend[legcount:legcount+numplots]
