@@ -74,3 +74,50 @@ def getIsos(checklist):
             if checkElement(elem_name):
                 isos_list.append(data_name)
     return isos_list
+
+def getExtremes(data,rng=50,maximums=True,minimums=True):
+    length=len(data)
+    k=rng*1
+    maxims=[]
+    minims=[]
+    for point in xrange(rng, length-rng):
+        entornind=range(k-rng, k)+range(k+1, k+rng+1)
+        entorn=data[entornind]
+        value=data[k]
+        if maximums:
+            if value>np.max(entorn):
+                maxims.append(k)
+        if minimums:
+            if value<np.min(entorn):
+                minims.append(k)
+        k+=1
+    return maxims, minims
+def readProfileFast(name): # created from nugridpy function _read_mesafile
+    f=open(name,'r')
+    lines=[f.readline() for line in xrange(6)]
+    hval  = lines[2].split()
+    hlist = lines[1].split()
+    hdr = {}
+    for a,b in zip(hlist,hval):
+        hdr[a] = float(b)
+
+    cols    = {}
+    colname = lines[5].split()
+    for b,a in enumerate(colname):
+        cols[a] = b
+
+    num_zones=int(hval[hlist.index('num_zones')])
+    data = np.empty((num_zones, len(colname)),dtype='float64')
+    for i in range(num_zones):
+        line = f.readline()
+        v=line.split()
+        try:
+            data[i,:]=np.array(v,dtype='float64')
+        except ValueError:
+            for item in v:
+                if item.__contains__('.') and not item.__contains__('E'):
+                    v[v.index(item)]='0'
+            data[i,:]=np.array(v,dtype='float64')
+
+    f.close()
+    return hdr, cols, data

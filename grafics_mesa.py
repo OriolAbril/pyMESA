@@ -33,6 +33,8 @@ pltpar.add_argument('-sc', '--scale', help='Choose the scale between: liner, sem
                     type=str, choices=['lin', 'logy', 'logx', 'loglog', 'logxy'])
 pltpar.add_argument('-co', '--colors', help='Colors to be used in the plot, they must be valid matplotlib colors',
                     nargs='+')
+pltpar.add_argument('-lw', '--linewidth', help='Set linewidth of matplotlib plots', default=1,
+                    type=float)
 pltpar.add_argument('-t', '--title', help='Title of the plot', type=str, default='')
 pltpar.add_argument('-lt', '--legtit', help='Title for the legend', type=str, default='')
 pltpar.add_argument('-l', '--legend', help='Labels for the legend. Default text is name of file without extension',
@@ -67,6 +69,7 @@ else: # set plot variables and configuration
     if (mpl or args.eps!='noeps'):  # import and initialize matplotlib
         import matplotlib
         matplotlib.use('TKAgg')
+        matplotlib.rcParams['lines.linewidth'] = args.linewidth
         import matplotlib.font_manager as fnt
         import matplotlib.pyplot as plt
         if not(args.offset):
@@ -117,7 +120,7 @@ for filecount, doc in enumerate(args.files): #loop over each file
     hdr, cols, data=ms._read_mesafile(doc, length-6)
     if args.headers:  # print headers
         print doc
-        pym.terminal_print(pym.getIsos(cols.keys()), columns=args.terminalcols, order=args.order)
+        pym.terminal_print(cols.keys(), columns=args.terminalcols, order=args.order)
         print '\n'
     else: 
         docols=[col for col in re.split(',', args.columns[filecount])]  # get headers to plot
@@ -161,7 +164,7 @@ if not(args.headers):
         # set title, grid and legend
         fig.suptitle(args.title)
         graf.grid(True)
-        graf.legend(loc='best', prop=fnt.FontProperties(size='medium'), title=args.legtit)
+        graf.legend(loc='lower left', prop=fnt.FontProperties(size='medium'), title=args.legtit)
     if args.eps!='noeps':  # save figure
         if args.eps!='sieps':  # save figure with specified name, extension is checked
             seed=fpat.search(args.eps) 
