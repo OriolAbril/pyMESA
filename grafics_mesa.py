@@ -17,7 +17,7 @@ group.add_argument('-hd', '--headers', help='Show available headers in the files
                    action='store_true', default=False)
 hdpar=p.add_argument_group(title='Commands to personalize the headers output')
 hdpar.add_argument('-tc', '--terminalcols', help='Number of columns to show the headers when using the -hd flag', 
-                   type=int, default=4, choices=[1, 4, 5])
+                   type=int, default=0)
 hdpar.add_argument('-o', '--order', help='Choose fist direction to sort the names, either first descending and\
                    then to the right (default) or viceversa', type=str, default='descending', 
                    choices=['d', 'descending', 'r', 'right'])
@@ -121,7 +121,6 @@ for filecount, doc in enumerate(args.files): #loop over each file
     if args.headers:  # print headers
         print doc
         pym.terminal_print(cols.keys(), columns=args.terminalcols, order=args.order)
-        print '\n'
     else: 
         docols=[col for col in re.split(',', args.columns[filecount])]  # get headers to plot
         numplots=len(docols)-1
