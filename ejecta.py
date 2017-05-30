@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from NuGridPy import mesa as ms
 import re
-from scipy import constants
+from astropy import constants
 
 log_fold='LOGS'
 p=ms.mesa_profile()
@@ -22,7 +22,9 @@ start=0
 length=len(models)
 Z1vec=np.arange(length, dtype=float)
 agevec=np.arange(length, dtype=float)
-G=constants.G
+G=constants.G._value
+Rsun=constants.R_sun._value
+Msun=constants.M_sun._value
 
 # load history and identify bursts
 length=pym.file_len('%s/history.data' %log_fold)
@@ -52,7 +54,8 @@ plt.subplot(211)
 plt.plot(x[:-1],recurrence,'o-')
 plt.subplot(212)
 plt.plot(x,ejected_mass,'o-')
-plt.show()
+#plt.show()
+plt.pause(0.5)
 model_maxims=model_numbers[maxims]
 model_minims=model_numbers[minims]
 burstsind=range(len(maxims))  # save index positions for all profiles corresponding to a burst
@@ -76,14 +79,12 @@ for mod_num in models:
 for j,burst in enumerate(burstsind):
     doc=''.join([log_fold, '/profile', str(profs[burst[0]]), '.data'])
     hdr, cols, data=pym.readProfileFast(doc)
+    w=10.**data[:,cols['logdq']]  # get mass fractions
     for i,mod_num in enumerate(burst[1:]):
         hdr_old=hdr; cols_old=cols; data_old=data
         doc=''.join([log_fold, '/profile', str(profs[mod_num]), '.data'])
         hdr, cols, data=pym.readProfileFast(doc)
-        if np.all(data==data_old):
-            print 'merda'
-        else:
-            print 'yay'
+        star_mass=hdr['star_mass']
         if first:
             abun_list=pym.getIsos(cols.keys())
             for iso in abun_list:
@@ -93,19 +94,35 @@ for j,burst in enumerate(burstsind):
                     nonmetals.append(iso)
                 else:
                     metals.append(iso)
+            ejected_mass=np.arange(len(burstsind), len(abun_list))
             first=False
-    Z1=0.
-    w=10**data[:,cols['logdq']-1]  # get mass fractions
-    wsum=sum(w[start:end])
-    # Add all mass fractions (with respect to the cell) for h and he
-    for iso in nonmetals:
-        Z1+=data[:,cols[iso]-1][start:end]
-    # Use cell mass fraction (with respect to the total mass) as weight 
-    # for th average metallicity
-    Z1*=w[start:end]
-    Z1=sum(Z1)/wsum
-    Z1vec[i]=1-Z1
-    agevec[i]=hdr['star_age']
+        Z1=0.
+        wold=w
+        w=10.**data[:,cols['logdq']]  # get mass fractions
+        # Add all mass fractions (with respect to the cell) for h and he
+        #print mod_num
+        plt.plot(data[:,cols['radius']],data[:,cols['velocity']])
+        plt.pause(0.4)
+        for cell,speed in enumerate(data[:,cols['velocity']]):
+            M=(1.-10.**data[cell,cols['logxq']])*star_mass*Msun
+            escapev=np.sqrt(2.*G*M/(data[cell,cols['radius']]*Rsun))
+            #print(escapev, speed)
+            if escapev<speed:  # check if ejected
+                protoejecta=np.array([(iso,data[cell,cols[iso]]) for iso in abun_list])
+                protoejecta*=w[cell]*star_mass #calculate ejected mass in Msun units
+                ejected_mass[j,:]+=protoejecta
+                #pym.terminal_print([(iso,data[cell,cols[iso]]) for iso in abun_list])
+            else:
+                print(len(w), cell)
+                break
+        #for iso in nonmetals:
+            #Z1+=data[:,cols[iso]][start:end]
+        # Use cell mass fraction (with respect to the total mass) as weight 
+        # for th average metallicity
+        #Z1*=w[start:end]
+        #Z1=sum(Z1)/wsum
+        #Z1vec[i]=1-Z1
+        #agevec[i]=hdr['star_age']
 
 plt.plot(agevec,Z1vec)
-#plt.show()
+plt.show()
