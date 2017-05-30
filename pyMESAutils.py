@@ -114,7 +114,7 @@ def terminal_print(iterable, sort=True, order='descending', columns=0):
     maxwidth=max([len(str(chunk)) for chunk in iterable])
     if columns==0:
         columns=screenwidth/(maxwidth+5)
-    colwidth=max(maxwidth,screenwidth/columns)
+    colwidth=max(maxwidth+1,screenwidth/columns)
     print columns,maxwidth,colwidth
     formatlist=['{:<%d}' %colwidth for i in xrange(columns-1)]
     formatlist.append('{:<}')
