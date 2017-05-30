@@ -108,38 +108,47 @@ stable_isos = [ 'h1','h2','he3','he4','li6','li7','be9','b10',
         'pb207','pb208','bi209','th232','u235','u238']
 
 def terminal_print(iterable, sort=True, order='descending', columns=0):
-    # the options for the descending parameter are descending or right.
-    # it sets the first order direction to the selected one
+    '''
+    Print a list organized in columns, following the style of the ls command
+    
+    Parameters:
+    -----------
+        iterable : list or tuple
+            the iterable containing all the elements that have to be printed
+        sort : boolean
+            whether or not to sort the elements in iterable
+        order : ('descending' | 'right')
+            the options for the descending parameter are descending and right.
+            it choses which one is used first
+        columns = int
+            Number of columns of the printed list, columns=0 sets the number of 
+            columns in order to fix their width to the maximum length of the 
+            strings in iterable plus 5
+    '''
     screenwidth=140
     maxwidth=max([len(str(chunk)) for chunk in iterable])
     if columns==0:
         columns=screenwidth/(maxwidth+5)
     colwidth=max(maxwidth+1,screenwidth/columns)
-    print columns,maxwidth,colwidth
     formatlist=['{:<%d}' %colwidth for i in xrange(columns-1)]
     formatlist.append('{:<}')
     formatstr=''.join(formatlist)
-    print formatstr
     if sort:
         iterable=sorted(iterable)
-    col_len=len(iterable)/columns*np.arange(0,columns)
-    for i in range(len(iterable)%columns):
-        col_len[i:]+=1
-    col_len=np.append(col_len,None)
     if columns==1:
         for name in iterable:
             print name
     else:
         if order=='descending':
+            col_len=len(iterable)/columns*np.arange(0,columns)
+            for i in range(len(iterable)%columns):
+                col_len[i:]+=1
+            col_len=np.append(col_len,None)
             args=[iterable[col_len[i]:col_len[i+1]] for i in xrange(columns)]
-            for name in izip_longest(*args, fillvalue=''):
-                #first descending and then to the right order
-                print formatstr.format(*name)
         if order=='right':
-            for name in izip_longest(*[iterable[i::columns] for i in xrange(columns)],
-                                     fillvalue=''):
-                #first to the right then descending order
-                print formatstr.format(*name)
+            args=[iterable[i::columns] for i in xrange(columns)]
+        for name in izip_longest(*args, fillvalue=''):
+            print formatstr.format(*name)
 
 
 def file_len(fname):
