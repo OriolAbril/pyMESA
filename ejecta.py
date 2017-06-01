@@ -3,9 +3,15 @@ sys.path.append('/home/oriol/Documentos/pyMESA')
 import pyMESAutils as pym
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 from NuGridPy import mesa as ms
 import re
 from astropy import constants
+import argparse as arp  # command line parsing module and help
+
+p=arp.ArgumentParser(description='Script to save and plot data from nova bursts simulated with MESA')
+p.add_argument('filename', help='Name of the files to save')
+args=p.parse_args()  # parse arguments
 
 log_fold='LOGS'
 p=ms.mesa_profile()
@@ -17,7 +23,7 @@ profs=p.log_ind
 first=True
 nonmetals=[]
 metals=[]
-abunPat = re.compile(r'([a-z]{1,3})[0-9]{1,3}$',re.IGNORECASE)
+abunPat = re.compile(r'([a-z]{1,3})([0-9]{1,3})$',re.IGNORECASE)
 start=0
 length=len(models)
 Z1vec=np.arange(length, dtype=float)
@@ -33,18 +39,25 @@ star_age=hdata[:,hcols['star_age']-1]
 model_numbers=hdata[:,hcols['model_number']-1]
 star_mass=hdata[:,hcols['star_mass']-1]
 hlength=len(star_age)
-maxims, minims=pym.getExtremes(star_mass, rng=80)
+maxims, minims=pym.getExtremes(star_mass, rng=200)
 if len(maxims)==len(minims)+1:
     maxims2, minims2=pym.getExtremes(star_mass, rng=10)
-    minims+=[minims2[-1]]
+    try:
+        if minims[-1]!=minims2[-1]:
+            minims+=[minims2[-1]]
+        else:
+            maxims=maxims[:-1]
+    except IndexError:
+        maxims=maxims[:-1]
+
+print model_numbers[maxims], model_numbers[minims]
 if len(maxims)!=len(minims):
-    raise IndexError('Found different number of maximumns and minimums\n\
-                     Try modifying the comparison ranges')
+    raise IndexError('Found different number of maximumns and minimums\nTry modifying the comparison ranges')
 
 recurrence=star_age[maxims[1:]]-star_age[maxims[:-1]]
 print 'Recurrence time:', recurrence
-ejected_mass=star_mass[maxims]-star_mass[minims]
-print 'Ejected mass:', ejected_mass
+eject_mass=star_mass[maxims]-star_mass[minims]
+print 'Ejected mass:', eject_mass
 plt.figure(1)
 plt.plot(star_age,star_mass,'k',star_age[maxims],star_mass[maxims],'ro')
 plt.plot(star_age[minims],star_mass[minims],'bo')
@@ -53,9 +66,16 @@ plt.figure(2)
 plt.subplot(211)
 plt.plot(x[:-1],recurrence,'o-')
 plt.subplot(212)
-plt.plot(x,ejected_mass,'o-')
-#plt.show()
-plt.pause(0.5)
+plt.plot(x,eject_mass,'o-')
+plt.figure(3)
+log_Teff=hdata[:,hcols['log_Teff']-1]
+log_L=hdata[:,hcols['log_L']-1]
+plt.plot(log_Teff[:minims[0]],log_L[:minims[0]],label='burst num %d' %1)
+for i in range(len(minims)-1):
+    plt.plot(log_Teff[minims[i]:minims[i+1]],log_L[minims[i]:minims[i+1]], label='burst num %d' %(i+2))
+plt.legend()
+plt.show()
+#plt.pause(0.5)
 model_maxims=model_numbers[maxims]
 model_minims=model_numbers[minims]
 burstsind=range(len(maxims))  # save index positions for all profiles corresponding to a burst
@@ -80,6 +100,8 @@ for j,burst in enumerate(burstsind):
     doc=''.join([log_fold, '/profile', str(profs[burst[0]]), '.data'])
     hdr, cols, data=pym.readProfileFast(doc)
     w=10.**data[:,cols['logdq']]  # get mass fractions
+    ejecsum=0
+    ejecmass=0
     for i,mod_num in enumerate(burst[1:]):
         hdr_old=hdr; cols_old=cols; data_old=data
         doc=''.join([log_fold, '/profile', str(profs[mod_num]), '.data'])
@@ -87,42 +109,70 @@ for j,burst in enumerate(burstsind):
         star_mass=hdr['star_mass']
         if first:
             abun_list=pym.getIsos(cols.keys())
+            amasses=[]
             for iso in abun_list:
                 abunMatch = abunPat.match(iso)
                 el = abunMatch.groups(1)[0]
+                amasses.append(int(abunMatch.groups(1)[1]))
                 if np.any(np.array(['h', 'he'])==el):
                     nonmetals.append(iso)
                 else:
                     metals.append(iso)
-            ejected_mass=np.arange(len(burstsind), len(abun_list))
+            ejected_mass=np.zeros((len(burstsind), len(abun_list)))
             first=False
         Z1=0.
         wold=w
         w=10.**data[:,cols['logdq']]  # get mass fractions
         # Add all mass fractions (with respect to the cell) for h and he
         #print mod_num
-        plt.plot(data[:,cols['radius']],data[:,cols['velocity']])
-        plt.pause(0.4)
+        wsum=0
+        modejecta=np.zeros(len(abun_list))
+        eject=False
+        noeject=0
         for cell,speed in enumerate(data[:,cols['velocity']]):
             M=(1.-10.**data[cell,cols['logxq']])*star_mass*Msun
             escapev=np.sqrt(2.*G*M/(data[cell,cols['radius']]*Rsun))
             #print(escapev, speed)
             if escapev<speed:  # check if ejected
-                protoejecta=np.array([(iso,data[cell,cols[iso]]) for iso in abun_list])
-                protoejecta*=w[cell]*star_mass #calculate ejected mass in Msun units
-                ejected_mass[j,:]+=protoejecta
+                eject=True
+                protoejecta=np.array([data[cell,cols[iso]] for iso in abun_list],dtype=float)
+                protoejecta*=w[cell] #calculate ejected mass fractions
+                modejecta+=protoejecta
+                wsum+=w[cell]
                 #pym.terminal_print([(iso,data[cell,cols[iso]]) for iso in abun_list])
             else:
-                print(len(w), cell)
-                break
-        #for iso in nonmetals:
-            #Z1+=data[:,cols[iso]][start:end]
-        # Use cell mass fraction (with respect to the total mass) as weight 
-        # for th average metallicity
-        #Z1*=w[start:end]
-        #Z1=sum(Z1)/wsum
-        #Z1vec[i]=1-Z1
-        #agevec[i]=hdr['star_age']
+                noeject+=1
+                if noeject>10:
+                    print(len(w), cell)
+                    break
+        if eject:
+            #print sum(modejecta/wsum)
+            ejected_mass[j,:]+=modejecta/wsum
+            ejecsum+=1
+            ejecmass+=wsum*star_mass
+    print ejecmass, eject_mass[j]
+    ejected_mass[j,:]=ejected_mass[j,:]/ejecsum
+    #print sum(ejected_mass[j,:])
+    #plt.figure()
+    #for i,iso in enumerate(abun_list):
+    #    if ejected_mass[j,i]>1e-8:
+    #        plt.semilogy(amasses[i], ejected_mass[j,i], 'o', label=iso)
+    #plt.legend()
+    #plt.show()
 
-plt.plot(agevec,Z1vec)
+colors=[p['color'] for p in plt.rcParams['axes.prop_cycle']]
+np.savetxt(args.filename+'.dat',ejected_mass)
+f=open(args.filename+'.txt','w')
+f.write('Elements:'+','.join(abun_list))
+f.write('\n# Models in each burst\n')
+f.write('\n'.join([','.join([str(mod) for mod in burst]) for burst in burstsind]))
+f.close()
+leg=[]
+for j in xrange(len(burstsind)):
+    leg.append(mpatches.Patch(color=colors[j], label='Burst num %d' %(j+1)))
+    for i,iso in enumerate(abun_list):
+        plt.text(amasses[i], ejected_mass[j,i],iso,color=colors[j])
+plt.yscale('log')
+plt.axis([0, amasses[-1]+1, 1e-8, 1.5])
+plt.legend(handles=leg)
 plt.show()
