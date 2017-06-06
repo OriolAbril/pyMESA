@@ -10,57 +10,6 @@ import re
 from astropy import constants
 import argparse as arp  # command line parsing module and help
 
-
-abunPat=re.compile(r'([a-z]{1,3})([0-9]{1,3})',re.IGNORECASE)
-def plotAbunByA(ax,isos_list,ejected_mass,color=None,solar=False):
-# create dictionary containing the isotopes for each element
-    eldict={}
-    amasses=range(len(isos_list))
-    for i,iso in enumerate(isos_list):
-        m=abunPat.match(iso)
-        amasses[i]=int(m.groups(1)[1])
-        el=m.groups(1)[0]
-        try:
-            eldict[el]+=[iso]
-        except KeyError:
-            eldict[el]=[iso]
-    else:
-        eldict[el]=sorted(eldict[el])
-    for k,el in enumerate(eldict):
-        masses=[]
-        ej_iso=[]
-        for iso in eldict[el]:
-            i=isos_list.index(iso)
-            if solar:
-                if iso in pym.stable_isos:
-                    solar=pym.sol_comp_ag89[pym.stable_isos.index(iso)]
-                    ej_iso.append(ejected_mass[i]/solar)
-                    masses.append(amasses[i])
-            else:
-                ej_iso.append(ejected_mass[i])
-                masses.append(amasses[i])
-        line, =ax.plot(masses, ej_iso, 'o-', color=color, linewidth=0.5, markersize=1)
-        ytextval=np.max(ej_iso)
-        xtextval=masses[ej_iso.index(ytextval)]
-        ax.text(xtextval,ytextval,el,color=color,clip_on=True)
-    ax.set_yscale('log')
-    ax.set_xlim([0, max(amasses)+1])
-    if solar:
-        ax.set_ylim([1e-10, 1e3])
-    else:
-        ax.set_ylim([1e-10, 1.5])
-
-def plotAbunText(ax,isos_list,ejected_mass,amasses,color=None,solar=False):
-    for i,iso in enumerate(isos_list):
-        if solar:
-            if iso in pym.stable_isos:
-                solar=pym.sol_comp_ag89[pym.stable_isos.index(iso)]
-                ax.text(amasses[i], ejected_mass[i]/solar, iso, color=colors[j], clip_on=True)
-        else:
-            ax.text(amasses[i], ejected_mass[i], iso, color=colors[j], clip_on=True)
-    plt.yscale('log')
-    plt.axis([0, max(amasses)+3, 1e-1, 1e4])
-
 p=arp.ArgumentParser(description='Script to save and plot data from nova bursts simulated with MESA')
 p.add_argument('filename', help='Name of the files to save')
 args=p.parse_args()  # parse arguments
@@ -88,7 +37,8 @@ for j in xrange(shape[0]):
     pymp.plotAbunByA(ax1,analyze_list,ejected_mass[j,analyze_indexs],color=colors[j],solar=False)
     #pymp.plotAbunText(ax1,abun_list,ejected_mass[j,:],amasses,color=colors[j],solar=False)
 ax1.legend(handles=leg)
-
+ax1.grid(True)
+ax1.set_title('Chemical composition of the ejected material')
 
 fig2=plt.figure(2)
 ax2=fig2.add_subplot(111)
@@ -96,6 +46,8 @@ for j in xrange(shape[0]):
     pymp.plotAbunByA(ax2,analyze_list,ejected_mass[j,analyze_indexs],color=colors[j],solar=False)
     #pymp.plotAbunText(ax2,abun_list,ejected_mass[j,:],amasses,color=colors[j],solar=True)
 ax2.legend(loc='upper left',handles=leg)
+ax2.grid(True)
+ax2.set_title('Chemical composition of the ejected material compared to solar abundances')
 
 fig3=plt.figure(3)
 ax3=fig3.add_subplot(111)
@@ -108,6 +60,9 @@ for iso in analyze_list:
         ax3.text(bursts[0],ejected_mass[0,i],iso)
 ax3.set_yscale('log')
 ax3.legend()
+ax3.set_xlabel('Burst number')
+ax3.set_ylabel('Ejected mass fraction')
+#ax3.set_title('Ejected mass')
 
 fig4=plt.figure(4)
 ax4=fig4.add_subplot(111)
@@ -119,6 +74,9 @@ for iso in analyze_list:
         ax4.text(bursts[-1],ejected_mass[-1,i]/ejected_mass[0,i],iso)
 ax4.set_yscale('log')
 ax4.legend()
+ax4.set_xlabel('Burst number')
+ax4.set_ylabel('Ejected mass fraction relative to 1st burst')
+#ax4.set_title('Ejected mass')
 
 fig5=plt.figure(5)
 ax5=fig5.add_subplot(111)
@@ -129,5 +87,8 @@ ax5.plot(bursts,np.sum(ejected_mass[:,stable_index],axis=1),label='Stable elemen
 ax5.plot(bursts,np.sum(ejected_mass[:,:],axis=1),label='All elements')
 ax5.set_yscale('log')
 ax5.legend()
+ax5.set_xlabel('Burst number')
+ax5.set_ylabel('Mass fraction')
+#ax5.set_title('')
 
 plt.show()
