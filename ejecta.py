@@ -39,9 +39,9 @@ star_age=hdata[:,hcols['star_age']-1]
 model_numbers=hdata[:,hcols['model_number']-1]
 star_mass=hdata[:,hcols['star_mass']-1]
 hlength=len(star_age)
-maxims, minims=pym.getExtremes(star_mass, rng=200)
+maxims, minims=pym.getExtremes(star_mass, rng=100)
 if len(maxims)==len(minims)+1:
-    maxims2, minims2=pym.getExtremes(star_mass, rng=10)
+    maxims2, minims2=pym.getExtremes(star_mass, rng=5)
     try:
         if minims[-1]!=minims2[-1]:
             minims+=[minims2[-1]]

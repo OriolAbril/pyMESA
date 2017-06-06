@@ -22,11 +22,14 @@ line=f.readline()
 f.close()
 line=line.replace(':',',')
 abun_list=line.split(',')[1:]
+if abun_list[-1][-1]=='\n':
+    abun_list[-1]=abun_list[-1][:-1]
 unstable_list=[iso for iso in abun_list if iso not in pym.stable_isos]
 stable_list=[iso for iso in abun_list if iso in pym.stable_isos]
-analyze_list=unstable_list
+#analyze_list=['he3','ne22','li6','s36','li7','b10','be9']
+analyze_list=abun_list
 analyze_indexs=[abun_list.index(iso) for iso in analyze_list]
-amasses=[int(i[1]) for i in re.findall(abunPat,line)]
+amasses=[int(i[1]) for i in re.findall(pym.abunPat,line)]
 shape=np.shape(ejected_mass)
 bursts=np.arange(1,shape[0]+1)
 leg=[]
@@ -43,7 +46,7 @@ ax1.set_title('Chemical composition of the ejected material')
 fig2=plt.figure(2)
 ax2=fig2.add_subplot(111)
 for j in xrange(shape[0]):
-    pymp.plotAbunByA(ax2,analyze_list,ejected_mass[j,analyze_indexs],color=colors[j],solar=False)
+    pymp.plotAbunByA(ax2,analyze_list,ejected_mass[j,analyze_indexs],color=colors[j],solar=True)
     #pymp.plotAbunText(ax2,abun_list,ejected_mass[j,:],amasses,color=colors[j],solar=True)
 ax2.legend(loc='upper left',handles=leg)
 ax2.grid(True)
@@ -62,6 +65,7 @@ ax3.set_yscale('log')
 ax3.legend()
 ax3.set_xlabel('Burst number')
 ax3.set_ylabel('Ejected mass fraction')
+ax3.grid(True)
 #ax3.set_title('Ejected mass')
 
 fig4=plt.figure(4)
@@ -73,22 +77,25 @@ for iso in analyze_list:
         ax4.plot(bursts,ejected_mass[:,i]/ejected_mass[0,i],label=iso)
         ax4.text(bursts[-1],ejected_mass[-1,i]/ejected_mass[0,i],iso)
 ax4.set_yscale('log')
-ax4.legend()
+#ax4.legend()
 ax4.set_xlabel('Burst number')
 ax4.set_ylabel('Ejected mass fraction relative to 1st burst')
+ax4.grid(True)
 #ax4.set_title('Ejected mass')
 
 fig5=plt.figure(5)
 ax5=fig5.add_subplot(111)
 unstable_index=[abun_list.index(iso) for iso in unstable_list]
 stable_index=[abun_list.index(iso) for iso in stable_list]
-ax5.plot(bursts,np.sum(ejected_mass[:,unstable_index],axis=1),label='Unstable elements')
-ax5.plot(bursts,np.sum(ejected_mass[:,stable_index],axis=1),label='Stable elements')
-ax5.plot(bursts,np.sum(ejected_mass[:,:],axis=1),label='All elements')
+ax5.plot(bursts,np.sum(ejected_mass[:,unstable_index],axis=1)/np.sum(ejected_mass[0,unstable_index]),label='Unstable elements')
+ax5.plot(bursts,np.sum(ejected_mass[:,stable_index],axis=1)/np.sum(ejected_mass[0,stable_index]),label='Stable elements')
+ax5.plot(bursts,np.sum(ejected_mass[:,:],axis=1)/np.sum(ejected_mass[0,:]),label='All elements')
 ax5.set_yscale('log')
 ax5.legend()
+ax5.grid(True)
 ax5.set_xlabel('Burst number')
 ax5.set_ylabel('Mass fraction')
+ax5.set_ylim([0.2, 5])
 #ax5.set_title('')
 
 plt.show()

@@ -18,7 +18,7 @@ def plotAbunByA(ax,isos_list,ejected_mass,color=None,solar=False):
             eldict[el]+=[iso]
         except KeyError:
             eldict[el]=[iso]
-    else:
+    for el in eldict:
         eldict[el]=sorted(eldict[el])
     for k,el in enumerate(eldict):
         masses=[]
@@ -34,9 +34,12 @@ def plotAbunByA(ax,isos_list,ejected_mass,color=None,solar=False):
                 ej_iso.append(ejected_mass[i])
                 masses.append(amasses[i])
         line, =ax.plot(masses, ej_iso, 'o-', color=color, linewidth=0.5, markersize=1)
-        ytextval=np.max(ej_iso)
-        xtextval=masses[ej_iso.index(ytextval)]
-        ax.text(xtextval,ytextval,el,color=color,clip_on=True)
+        try:
+            ytextval=np.max(ej_iso)
+            xtextval=masses[ej_iso.index(ytextval)]
+            ax.text(xtextval,ytextval,el,color=color,clip_on=True)
+        except ValueError:
+            pass
     ax.set_yscale('log')
     ax.set_xlim([0, max(amasses)+1])
     ax.set_xlabel('Atomic mass number')
