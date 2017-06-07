@@ -10,6 +10,8 @@ import re
 from astropy import constants
 import argparse as arp  # command line parsing module and help
 
+nonmetals=['h1','h2','h3','he3','he4']
+
 p=arp.ArgumentParser(description='Script to save and plot data from nova bursts simulated with MESA')
 p.add_argument('filename', help='Name of the files to save')
 args=p.parse_args()  # parse arguments
@@ -97,5 +99,24 @@ ax5.set_xlabel('Burst number')
 ax5.set_ylabel('Mass fraction')
 ax5.set_ylim([0.2, 5])
 #ax5.set_title('')
+
+fig6=plt.figure(6)
+ax5=fig6.add_subplot(111)
+num_bursts=np.shape(ejected_mass)[0]
+metallicity=np.zeros(num_bursts)
+for j in xrange(num_bursts):
+    total=0
+    for i,iso in enumerate(abun_list):
+        if iso not in nonmetals:
+            metallicity[j]+=ejected_mass[j,i]
+            total+=ejected_mass[j,i]
+        else:
+            total+=ejected_mass[j,i]
+    print total
+ax5.plot(bursts,metallicity,linewidth=1,markersize=2.5)
+ax5.set_xlabel('Burst number')
+ax5.set_ylabel('Metallicity')
+ax5.grid(True)
+
 
 plt.show()

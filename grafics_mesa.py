@@ -68,7 +68,7 @@ else: # set plot variables and configuration
     mpl=(not(args.np) and not(args.pqg))
     if (mpl or args.eps!='noeps'):  # import and initialize matplotlib
         import matplotlib
-        matplotlib.use('TKAgg')
+        #matplotlib.use('TKAgg')
         matplotlib.rcParams['lines.linewidth'] = args.linewidth
         import matplotlib.font_manager as fnt
         import matplotlib.pyplot as plt
