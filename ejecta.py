@@ -96,16 +96,23 @@ for mod_num in models:
     elif mod_num>init_burst:
         burst.append(mod_num)
 
+Tmax=np.zeros(len(burstsind))-40
+vels=np.zeros((len(burstsind),2))
 for j,burst in enumerate(burstsind):
     doc=''.join([log_fold, '/profile', str(profs[burst[0]]), '.data'])
     hdr, cols, data=pym.readProfileFast(doc)
     w=10.**data[:,cols['logdq']]  # get mass fractions
     ejecsum=0
     ejecmass=0
+    maxV=0
+    minV=1e99
     for i,mod_num in enumerate(burst[1:]):
         hdr_old=hdr; cols_old=cols; data_old=data
         doc=''.join([log_fold, '/profile', str(profs[mod_num]), '.data'])
         hdr, cols, data=pym.readProfileFast(doc)
+        logTemp=data[:,cols['logT']]
+        if max(logTemp)>Tmax[j]:
+            Tmax[j]=max(logTemp)
         star_mass=hdr['star_mass']
         if first:
             abun_list=pym.getIsos(cols.keys())
@@ -135,6 +142,10 @@ for j,burst in enumerate(burstsind):
             #print(escapev, speed)
             if escapev<speed:  # check if ejected
                 eject=True
+                if speed>maxV:
+                    maxV=speed*1.
+                elif speed<minV:
+                    minV=speed*1.
                 protoejecta=np.array([data[cell,cols[iso]] for iso in abun_list],dtype=float)
                 protoejecta*=w[cell] #calculate ejected mass fractions
                 modejecta+=protoejecta
@@ -152,18 +163,16 @@ for j,burst in enumerate(burstsind):
             ejecmass+=wsum*star_mass
     print ejecmass, eject_mass[j]
     ejected_mass[j,:]=ejected_mass[j,:]/ejecsum
-    #print sum(ejected_mass[j,:])
-    #plt.figure()
-    #for i,iso in enumerate(abun_list):
-    #    if ejected_mass[j,i]>1e-8:
-    #        plt.semilogy(amasses[i], ejected_mass[j,i], 'o', label=iso)
-    #plt.legend()
-    #plt.show()
+    vels[j,0]=maxV
+    vels[j,1]=minV
 
 colors=[p['color'] for p in plt.rcParams['axes.prop_cycle']]
 np.savetxt(args.filename+'.dat',ejected_mass)
 f=open(args.filename+'.txt','w')
 f.write('Elements:'+','.join(abun_list))
+f.write('\nMaximum temperature:'+','.join([str(t) for t in Tmax]))
+f.write('\nMaximum velocity:'+','.join([str(t) for v in vels[:,0]]))
+f.write('\nMinimum:'+','.join([str(t) for v in vels[:,1]]))
 f.write('\n# Models in each burst\n')
 f.write('\n'.join([','.join([str(mod) for mod in burst]) for burst in burstsind]))
 f.close()

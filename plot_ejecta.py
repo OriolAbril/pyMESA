@@ -19,11 +19,19 @@ args=p.parse_args()  # parse arguments
 #analyze_list=['o14','o15','o16','o17','ne20','ne22']
 colors=[p['color'] for p in plt.rcParams['axes.prop_cycle']]
 ejected_mass=np.loadtxt(args.filename+'.dat')[:,:]
+shape=np.shape(ejected_mass)
 f=open(args.filename+'.txt','r')
-line=f.readline()
+lines=[f.readline() for i in range(4)]
 f.close()
-line=line.replace(':',',')
+line=lines[0].replace(':',',')
 abun_list=line.split(',')[1:]
+line=lines[1].replace(':',',')
+Tmax=np.array([float(i) for i in line.split(',')[1:]])
+line=lines[2].replace(':',',')
+vels=np.empty((shape[0],2))
+vels[:,0]=[float(i) for i in line.split(',')[1:]]
+line=lines[3].replace(':',',')
+vels[:,1]=[float(i) for i in line.split(',')[1:]]
 if abun_list[-1][-1]=='\n':
     abun_list[-1]=abun_list[-1][:-1]
 unstable_list=[iso for iso in abun_list if iso not in pym.stable_isos]
@@ -32,7 +40,6 @@ stable_list=[iso for iso in abun_list if iso in pym.stable_isos]
 analyze_list=abun_list
 analyze_indexs=[abun_list.index(iso) for iso in analyze_list]
 amasses=[int(i[1]) for i in re.findall(pym.abunPat,line)]
-shape=np.shape(ejected_mass)
 bursts=np.arange(1,shape[0]+1)
 leg=[]
 fig1=plt.figure(1)
@@ -87,21 +94,14 @@ ax4.grid(True)
 
 fig5=plt.figure(5)
 ax5=fig5.add_subplot(111)
-unstable_index=[abun_list.index(iso) for iso in unstable_list]
-stable_index=[abun_list.index(iso) for iso in stable_list]
-ax5.plot(bursts,np.sum(ejected_mass[:,unstable_index],axis=1)/np.sum(ejected_mass[0,unstable_index]),label='Unstable elements')
-ax5.plot(bursts,np.sum(ejected_mass[:,stable_index],axis=1)/np.sum(ejected_mass[0,stable_index]),label='Stable elements')
-ax5.plot(bursts,np.sum(ejected_mass[:,:],axis=1)/np.sum(ejected_mass[0,:]),label='All elements')
-ax5.set_yscale('log')
-ax5.legend()
+ax5.plot(bursts,Tmax,'o-')
 ax5.grid(True)
 ax5.set_xlabel('Burst number')
-ax5.set_ylabel('Mass fraction')
-ax5.set_ylim([0.2, 5])
+ax5.set_ylabel('$\log(T_{max})$ (K)')
 #ax5.set_title('')
 
 fig6=plt.figure(6)
-ax5=fig6.add_subplot(111)
+ax6=fig6.add_subplot(111)
 num_bursts=np.shape(ejected_mass)[0]
 metallicity=np.zeros(num_bursts)
 for j in xrange(num_bursts):
@@ -113,10 +113,20 @@ for j in xrange(num_bursts):
         else:
             total+=ejected_mass[j,i]
     print total
-ax5.plot(bursts,metallicity,linewidth=1,markersize=2.5)
-ax5.set_xlabel('Burst number')
-ax5.set_ylabel('Metallicity')
-ax5.grid(True)
+ax6.plot(bursts,metallicity,linewidth=1,markersize=2.5)
+ax6.set_xlabel('Burst number')
+ax6.set_ylabel('Metallicity')
+ax6.grid(True)
+
+fig7=plt.figure(7)
+ax7=fig7.add_subplot(111)
+ax7.plot(bursts,vels[:,0],'o-',label='$v_{max}$')
+ax7.plot(bursts,vels[:,1],'o-',label='$v_{min}$')
+ax7.legend()
+ax7.grid(True)
+ax7.set_xlabel('Burst number')
+ax7.set_ylabel('Ejected cell velocity (m/s)')
+#ax5.set_title('')
 
 
 plt.show()
