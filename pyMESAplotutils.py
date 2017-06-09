@@ -6,7 +6,7 @@ import sys
 sys.path.append('/home/oriol/Documentos/pyMESA')
 import pyMESAutils as pym
 
-def plotAbunByA(ax,isos_list,ejected_mass,color=None,solar=False):
+def plotAbunByA(ax,isos_list,ejected_mass,color=None,ls=None,solar=False):
 # create dictionary containing the isotopes for each element
     eldict={}
     amasses=range(len(isos_list))
@@ -33,7 +33,7 @@ def plotAbunByA(ax,isos_list,ejected_mass,color=None,solar=False):
             else:
                 ej_iso.append(ejected_mass[i])
                 masses.append(amasses[i])
-        line, =ax.plot(masses, ej_iso, 'o-', color=color, linewidth=0.5, markersize=1)
+        line, =ax.plot(masses, ej_iso, 'o-', color=color, linewidth=0.5, markersize=1, linestyle=ls)
         try:
             ytextval=np.max(ej_iso)
             xtextval=masses[ej_iso.index(ytextval)]

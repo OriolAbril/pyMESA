@@ -147,10 +147,12 @@ for j,burst in enumerate(burstsind):
             #print(escapev, speed)
             if escapev<speed:  # check if ejected
                 eject=True
+                #print speed,escapev
                 if speed>maxV:
                     maxV=speed*1.
                 elif speed<minV:
                     minV=speed*1.
+                #print maxV,minV
                 protoejecta=np.array([data[cell,cols[iso]] for iso in abun_list],dtype=float)
                 protoejecta*=w[cell] #calculate ejected mass fractions
                 modejecta+=protoejecta
@@ -159,7 +161,7 @@ for j,burst in enumerate(burstsind):
             else:
                 noeject+=1
                 if noeject>10:
-                    print(len(w), cell)
+                    #print(len(w), cell)
                     break
         if eject:
             #print sum(modejecta/wsum)
@@ -176,8 +178,8 @@ np.savetxt(args.filename+'.dat',ejected_mass)
 f=open(args.filename+'.txt','w')
 f.write('Elements:'+','.join(abun_list))
 f.write('\nMaximum temperature:'+','.join([str(t) for t in Tmax]))
-f.write('\nMaximum velocity:'+','.join([str(t) for v in vels[:,0]]))
-f.write('\nMinimum:'+','.join([str(t) for v in vels[:,1]]))
+f.write('\nMaximum velocity:'+','.join([str(v) for v in vels[:,0]]))
+f.write('\nMinimum:'+','.join([str(v) for v in vels[:,1]]))
 f.write('\n# Models in each burst\n')
 f.write('\n'.join([','.join([str(mod) for mod in burst]) for burst in burstsind]))
 f.close()

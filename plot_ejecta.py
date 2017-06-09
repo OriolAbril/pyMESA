@@ -10,14 +10,15 @@ import re
 from astropy import constants
 import argparse as arp  # command line parsing module and help
 
+# Define invariable quantities and objects
 nonmetals=['h1','h2','h3','he3','he4']
+colors=[p['color'] for p in plt.rcParams['axes.prop_cycle']]
 
 p=arp.ArgumentParser(description='Script to save and plot data from nova bursts simulated with MESA')
 p.add_argument('filename', help='Name of the files to save')
 args=p.parse_args()  # parse arguments
 
 #analyze_list=['o14','o15','o16','o17','ne20','ne22']
-colors=[p['color'] for p in plt.rcParams['axes.prop_cycle']]
 ejected_mass=np.loadtxt(args.filename+'.dat')[:,:]
 shape=np.shape(ejected_mass)
 f=open(args.filename+'.txt','r')
@@ -93,7 +94,7 @@ ax4.grid(True)
 #ax4.set_title('Ejected mass')
 
 fig5=plt.figure(5)
-ax5=fig5.add_subplot(111)
+ax5=fig5.add_axes([0.17,0.13,0.75,0.75])
 ax5.plot(bursts,Tmax,'o-')
 ax5.grid(True)
 ax5.set_xlabel('Burst number')
@@ -101,7 +102,7 @@ ax5.set_ylabel('$\log(T_{max})$ (K)')
 #ax5.set_title('')
 
 fig6=plt.figure(6)
-ax6=fig6.add_subplot(111)
+ax6=fig6.add_axes([0.17,0.13,0.75,0.75])
 num_bursts=np.shape(ejected_mass)[0]
 metallicity=np.zeros(num_bursts)
 for j in xrange(num_bursts):
@@ -123,6 +124,7 @@ ax7=fig7.add_subplot(111)
 ax7.plot(bursts,vels[:,0],'o-',label='$v_{max}$')
 ax7.plot(bursts,vels[:,1],'o-',label='$v_{min}$')
 ax7.legend()
+ax7.set_yscale('log')
 ax7.grid(True)
 ax7.set_xlabel('Burst number')
 ax7.set_ylabel('Ejected cell velocity (m/s)')
