@@ -178,6 +178,7 @@ def getExtremes(data,rng=50,maximums=True,minimums=True):
     k=rng*1
     maxims=[]
     minims=[]
+    memory=0
     for point in xrange(rng, length-rng):
         entornind=range(k-rng, k)+range(k+1, k+rng+1)
         entorn=data[entornind]
@@ -185,9 +186,17 @@ def getExtremes(data,rng=50,maximums=True,minimums=True):
         if maximums:
             if value>np.max(entorn):
                 maxims.append(k)
+            elif (value>=np.max(entorn) and memory!=value):
+                print 'Same maximum value corresponding to a double value'
+                maxims.append(k)
+                memory=value*1
         if minimums:
             if value<np.min(entorn):
                 minims.append(k)
+            elif (value<=np.min(entorn) and memory!=value):
+                print 'Same minimum value corresponding to a double value'
+                minims.append(k)
+                memory=value*1
         k+=1
     return maxims, minims
 def readProfileFast(name): # created from nugridpy function _read_mesafile

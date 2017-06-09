@@ -41,7 +41,7 @@ star_mass=hdata[:,hcols['star_mass']-1]
 hlength=len(star_age)
 maxims, minims=pym.getExtremes(star_mass, rng=100)
 if len(maxims)==len(minims)+1:
-    maxims2, minims2=pym.getExtremes(star_mass, rng=5)
+    maxims2, minims2=pym.getExtremes(star_mass, rng=10)
     try:
         if minims[-1]!=minims2[-1]:
             minims+=[minims2[-1]]
@@ -51,6 +51,11 @@ if len(maxims)==len(minims)+1:
         maxims=maxims[:-1]
 
 print model_numbers[maxims], model_numbers[minims]
+plt.figure(1)
+plt.plot(star_age,star_mass,'k',star_age[maxims],star_mass[maxims],'ro')
+plt.plot(star_age[minims],star_mass[minims],'bo')
+
+plt.show()
 if len(maxims)!=len(minims):
     raise IndexError('Found different number of maximumns and minimums\nTry modifying the comparison ranges')
 
