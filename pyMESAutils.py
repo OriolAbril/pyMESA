@@ -228,3 +228,27 @@ def readProfileFast(name): # created from nugridpy function _read_mesafile
 
     f.close()
     return hdr, cols, data
+
+def getMaxsMins(array,len1,len2):
+    maxims, minims=getExtremes(array, rng=len1)
+    #print maxims,minims
+    if len(maxims)==len(minims)-1:
+        maxims2, minims2=getExtremes(array, rng=len2)
+        try:
+            if maxims[-1]!=maxims2[-1]:
+                maxims+=[maxims2[-1]]
+            else:
+                minims=minims[:-1]
+        except IndexError:
+            minims=minims[:-1]
+    if len(maxims)==len(minims)+1:
+        maxims2, minims2=getExtremes(array, rng=len2)
+        try:
+            if minims[-1]!=minims2[-1]:
+                minims+=[minims2[-1]]
+            else:
+                maxims=maxims[:-1]
+        except IndexError:
+            maxims=maxims[:-1]
+    #print maxims,minims
+    return maxims,minims
