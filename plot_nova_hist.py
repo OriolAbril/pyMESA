@@ -35,29 +35,6 @@ ax4=fig4.add_axes([0.15,0.13,0.77,0.77])
 fig5=plt.figure(5)
 ax5=fig5.add_axes([0.15,0.13,0.77,0.77])
 leg=[]
-def getMaxsMins(array,len1,len2):
-    maxims, minims=pym.getExtremes(array, rng=len1)
-    print maxims,minims
-    if len(maxims)==len(minims)-1:
-        maxims2, minims2=pym.getExtremes(array, rng=len2)
-        try:
-            if maxims[-1]!=maxims2[-1]:
-                maxims+=[maxims2[-1]]
-            else:
-                minims=minims[:-1]
-        except IndexError:
-            minims=minims[:-1]
-    if len(maxims)==len(minims)+1:
-        maxims2, minims2=pym.getExtremes(array, rng=len2)
-        try:
-            if minims[-1]!=minims2[-1]:
-                minims+=[minims2[-1]]
-            else:
-                maxims=maxims[:-1]
-        except IndexError:
-            maxims=maxims[:-1]
-    print maxims,minims
-    return maxims,minims
 
 for flabel,log_fold,lstyle in zip(args.labels,args.folder,linestyle()):
     # load history and identify bursts
@@ -68,11 +45,11 @@ for flabel,log_fold,lstyle in zip(args.labels,args.folder,linestyle()):
     model_numbers=hdata[:,hcols['model_number']-1]
     star_mass=hdata[:,hcols['star_mass']-1]
     hlength=len(star_age)
-    maxims,minims=getMaxsMins(star_mass,250,10)
+    maxims,minims=pym.getMaxsMins(star_mass,250,10)
     if len(maxims)!=len(minims):
-        maxims,minims=getMaxsMins(star_mass,50,5)
+        maxims,minims=pym.getMaxsMins(star_mass,50,5)
     if len(maxims)!=len(minims):
-        maxims,minims=getMaxsMins(star_mass,500,50)
+        maxims,minims=pym.getMaxsMins(star_mass,500,50)
     if len(maxims)!=len(minims):
         raise IndexError('Found different number of maximumns and minimums\nTry modifying the comparison ranges')
 
