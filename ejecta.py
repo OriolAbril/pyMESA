@@ -40,11 +40,10 @@ model_numbers=hdata[:,hcols['model_number']-1]
 star_mass=hdata[:,hcols['star_mass']-1]
 hlength=len(star_age)
 maxims,minims=pym.getMaxsMins(star_mass,250,10)
-    if len(maxims)!=len(minims):
-        maxims,minims=pym.getMaxsMins(star_mass,50,5)
-    if len(maxims)!=len(minims):
-        maxims,minims=pym.getMaxsMins(star_mass,500,50)
-
+if len(maxims)!=len(minims):
+    maxims,minims=pym.getMaxsMins(star_mass,50,5)
+if len(maxims)!=len(minims):
+    maxims,minims=pym.getMaxsMins(star_mass,500,50)
 if len(maxims)!=len(minims):
     raise IndexError('Found different number of maximumns and minimums\nTry modifying the comparison ranges')
 
