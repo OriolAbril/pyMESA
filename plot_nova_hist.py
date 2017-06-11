@@ -19,8 +19,9 @@ args=p.parse_args()  # parse arguments
 
 if not(args.labels):
     args.labels=args.folder
+fcolors=['b','g','r','m','k']
 linestyle=['-','--','-.',':',(0,(5, 1.5, 1, 1.5, 1, 1.5))]
-linestyle=cycler(linestyle=linestyle)
+fcycler=cycler(color=fcolors,linestyle=linestyle)
 fig1=plt.figure(1)
 ax1=fig1.add_axes([0.2,0.15,0.7,0.7])
 fig2=plt.figure(2)
@@ -36,9 +37,10 @@ fig5=plt.figure(5)
 ax5=fig5.add_axes([0.15,0.13,0.77,0.77])
 leg=[]
 
-for flabel,log_fold,lstyle in zip(args.labels,args.folder,linestyle()):
+for flabel,log_fold,fcyc in zip(args.labels,args.folder,fcycler()):
     # load history and identify bursts
-    ls=lstyle['linestyle']
+    ls=fcyc['linestyle']
+    fcolor=fcyc['color']
     length=pym.file_len('%s/history.data' %log_fold)
     hhdr, hcols, hdata=ms._read_mesafile('%s/history.data' %log_fold, length-6)
     star_age=hdata[:,hcols['star_age']-1]
@@ -58,19 +60,19 @@ for flabel,log_fold,lstyle in zip(args.labels,args.folder,linestyle()):
 
     ax1.plot(star_age,star_mass,label=flabel)
     x=np.arange(len(maxims))+1
-    ax21.plot(x[:-1]+0.5,recurrence,'o-',label=flabel)
-    ax22.plot(x,eject_mass,'o-',label=flabel)
+    ax21.plot(x[:-1]+0.5,recurrence,'o-',label=flabel,color=fcolor)
+    ax22.plot(x,eject_mass,'o-',label=flabel,color=fcolor)
 
     log_Teff=hdata[:,hcols['log_Teff']-1]
     log_L=hdata[:,hcols['log_L']-1]
-    ax31.plot(log_Teff,log_L,label=flabel)
+    ax31.plot(log_Teff,log_L,label=flabel,color=fcolor)
     ax3.plot(log_Teff[:minims[0]],log_L[:minims[0]], ls=ls, linewidth=1)
     leg.append(mlines.Line2D([], [], ls=ls, color='k',linewidth=1, label=flabel))
     for i in range(len(minims)-1):
         ax3.plot(log_Teff[minims[i]:minims[i+1]],log_L[minims[i]:minims[i+1]], linewidth=1, ls=ls)
 
-    ax4.plot(star_age,log_Teff,linewidth=1,label=flabel)
-    ax5.plot(star_age,log_L,linewidth=1,label=flabel)
+    ax4.plot(star_age,log_Teff,linewidth=1,label=flabel,color=fcolor)
+    ax5.plot(star_age,log_L,linewidth=1,label=flabel,color=fcolor)
 
 # Create a legend for the first line.
 first_legend=ax3.legend(handles=leg, handlelength=3, loc='upper right')
