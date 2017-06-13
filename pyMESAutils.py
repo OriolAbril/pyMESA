@@ -199,6 +199,7 @@ def getExtremes(data,rng=50,maximums=True,minimums=True):
                 memory=value*1
         k+=1
     return maxims, minims
+
 def readProfileFast(name): # created from nugridpy function _read_mesafile
     f=open(name,'r')
     lines=[f.readline() for line in xrange(6)]

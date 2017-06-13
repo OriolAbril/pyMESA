@@ -11,10 +11,11 @@ import argparse as arp  # command line parsing module and help
 
 p=arp.ArgumentParser(description='Script to save and plot data from nova bursts simulated with MESA')
 p.add_argument('filename', help='Name of the files to save')
+p.add_argument('-f', '--folder', help='Name of the log folder', default='LOGS')
 args=p.parse_args()  # parse arguments
 
-log_fold='LOGS'
-p=ms.mesa_profile()
+log_fold=args.folder
+p=ms.mesa_profile(sldir=log_fold)
 # find all profiles to import 
 p._profiles_index()
 models=np.array(p.model)
@@ -39,7 +40,7 @@ star_age=hdata[:,hcols['star_age']-1]
 model_numbers=hdata[:,hcols['model_number']-1]
 star_mass=hdata[:,hcols['star_mass']-1]
 hlength=len(star_age)
-maxims,minims=pym.getMaxsMins(star_mass,250,10)
+maxims,minims=pym.getMaxsMins(star_mass,100,10)
 if len(maxims)!=len(minims):
     maxims,minims=pym.getMaxsMins(star_mass,50,5)
 if len(maxims)!=len(minims):
@@ -68,7 +69,7 @@ for i in range(len(minims)-1):
     plt.plot(log_Teff[minims[i]:minims[i+1]],log_L[minims[i]:minims[i+1]], label='burst num %d' %(i+2))
 plt.legend()
 plt.show()
-#plt.pause(0.5)
+#plt.pause(2)
 model_maxims=model_numbers[maxims]
 model_minims=model_numbers[minims]
 burstsind=range(len(maxims))  # save index positions for all profiles corresponding to a burst
@@ -171,12 +172,3 @@ f.write('\nMinimum:'+','.join([str(v) for v in vels[:,1]]))
 f.write('\n# Models in each burst\n')
 f.write('\n'.join([','.join([str(mod) for mod in burst]) for burst in burstsind]))
 f.close()
-leg=[]
-for j in xrange(len(burstsind)):
-    leg.append(mpatches.Patch(color=colors[j], label='Burst num %d' %(j+1)))
-    for i,iso in enumerate(abun_list):
-        plt.text(amasses[i], ejected_mass[j,i],iso,color=colors[j])
-plt.yscale('log')
-plt.axis([0, amasses[-1]+1, 1e-8, 1.5])
-plt.legend(handles=leg)
-plt.show()
