@@ -76,7 +76,7 @@ else: # set plot variables and configuration
             import matplotlib.ticker as tk
             marques=tk.ScalarFormatter(useOffset=False)
         fig=plt.figure(1)
-        graf=fig.add_axes([0.13, 0.1, 0.8, 0.8])
+        graf=fig.add_axes([0.18, 0.12, 0.75, 0.8])
     if args.pqg: # import PyQtGraph if specified
         import PyQt5
         from pyqtgraph.Qt import QtGui, QtCore

@@ -16,6 +16,8 @@ p=arp.ArgumentParser(description='Script to plot data from nova bursts simulated
                                   being postprocessed by ejecta.py')
 p.add_argument('filenames', help='Name of the files to plot and compare', nargs='+')
 p.add_argument('-l','--labels', help='Labels of each file', nargs='+')
+p.add_argument('-c','--concatenate', help='Consider the folders as consecutive bursts',
+               action='store_true', default=False)
 args=p.parse_args()  # parse arguments
 
 # Define invariable quantities and objects
@@ -47,6 +49,7 @@ fig6=plt.figure(6)
 ax6=fig6.add_axes([0.17,0.13,0.75,0.75])
 fig7=plt.figure(7)
 ax7=fig7.add_subplot(111)
+actual_burst=1
 
 def load_ejecta_txt(name,cols):
     f=open(name+'.txt','r')
@@ -82,7 +85,9 @@ for fname,flab,fcyc in zip(args.filenames,args.labels,fcycler()):
     stable_list=[iso for iso in abun_list if iso in pym.stable_isos]
     analyze_list=abun_list
     analyze_indexs=[abun_list.index(iso) for iso in analyze_list]
-    bursts=np.arange(1,num_bursts+1)
+    bursts=np.arange(num_bursts)+actual_burst
+    if args.concatenate:
+        actual_burst+=num_bursts
     metallicity=np.zeros(num_bursts)
     legb=[]
     for j,bcyc in zip(xrange(num_bursts),bcycler()):

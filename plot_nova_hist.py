@@ -15,6 +15,8 @@ import argparse as arp  # command line parsing module and help
 p=arp.ArgumentParser(description='Script to save and plot data from nova bursts simulated with MESA')
 p.add_argument('folder', help='Path to the LOGS folder', nargs='+')
 p.add_argument('-l','--labels', help='Labels of each file', nargs='+')
+p.add_argument('-c','--concatenate', help='Consider the folders as consecutive bursts',
+               action='store_true', default=False)
 args=p.parse_args()  # parse arguments
 
 if not(args.labels):
@@ -36,6 +38,7 @@ ax4=fig4.add_axes([0.15,0.13,0.77,0.77])
 fig5=plt.figure(5)
 ax5=fig5.add_axes([0.15,0.13,0.77,0.77])
 leg=[]
+actual_burst=1
 
 for flabel,log_fold,fcyc in zip(args.labels,args.folder,fcycler()):
     # load history and identify bursts
@@ -47,11 +50,11 @@ for flabel,log_fold,fcyc in zip(args.labels,args.folder,fcycler()):
     model_numbers=hdata[:,hcols['model_number']-1]
     star_mass=hdata[:,hcols['star_mass']-1]
     hlength=len(star_age)
-    maxims,minims=pym.getMaxsMins(star_mass,250,10)
+    maxims,minims=pym.getMaxsMins(star_mass,100,10)
     if len(maxims)!=len(minims):
-        maxims,minims=pym.getMaxsMins(star_mass,50,5)
+        maxims,minims=pym.getMaxsMins(star_mass,100,5)
     if len(maxims)!=len(minims):
-        maxims,minims=pym.getMaxsMins(star_mass,500,50)
+        maxims,minims=pym.getMaxsMins(star_mass,200,50)
     if len(maxims)!=len(minims):
         raise IndexError('Found different number of maximumns and minimums\nTry modifying the comparison ranges')
 
@@ -59,9 +62,13 @@ for flabel,log_fold,fcyc in zip(args.labels,args.folder,fcycler()):
     eject_mass=star_mass[maxims]-star_mass[minims]
 
     ax1.plot(star_age,star_mass,label=flabel)
-    x=np.arange(len(maxims))+1
-    ax21.plot(x[:-1]+0.5,recurrence,'o-',label=flabel,color=fcolor)
-    ax22.plot(x,eject_mass,'o-',label=flabel,color=fcolor)
+    ax1.plot(star_age[maxims],star_mass[maxims],'+k',star_age[minims],star_mass[minims],'*k')
+    
+    bursts=np.arange(len(maxims))+actual_burst
+    if args.concatenate:
+        actual_burst+=len(maxims)
+    ax21.plot(bursts[:-1]+0.5,recurrence,'o-',label=flabel,color=fcolor)
+    ax22.plot(bursts,eject_mass,'o-',label=flabel,color=fcolor)
 
     log_Teff=hdata[:,hcols['log_Teff']-1]
     log_L=hdata[:,hcols['log_L']-1]
