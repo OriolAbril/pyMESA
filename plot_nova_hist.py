@@ -4,7 +4,11 @@ import pyMESAutils as pym
 import numpy as np
 import matplotlib as mpl
 from cycler import cycler
+import matplotlib as mpl
 import matplotlib.pyplot as plt
+mpl.rcParams['font.size'] = 12
+mpl.rcParams['legend.fontsize'] = 'large'
+mpl.rcParams['figure.titlesize'] = 'medium'
 import matplotlib.lines as mlines
 from matplotlib.ticker import FormatStrFormatter
 from NuGridPy import mesa as ms
@@ -21,7 +25,7 @@ args=p.parse_args()  # parse arguments
 
 if not(args.labels):
     args.labels=args.folder
-fcolors=['b','g','r','m','k']
+fcolors=['k','b','g','r','c']
 linestyle=['-','--','-.',':',(0,(5, 1.5, 1, 1.5, 1, 1.5))]
 fcycler=cycler(color=fcolors,linestyle=linestyle)
 fig1=plt.figure(1)
@@ -50,12 +54,14 @@ for flabel,log_fold,fcyc in zip(args.labels,args.folder,fcycler()):
     model_numbers=hdata[:,hcols['model_number']-1]
     star_mass=hdata[:,hcols['star_mass']-1]
     hlength=len(star_age)
-    maxims,minims=pym.getMaxsMins(star_mass,100,10)
+    maxims,minims=pym.getMaxsMins(star_mass,250,10)
     if len(maxims)!=len(minims):
         maxims,minims=pym.getMaxsMins(star_mass,100,5)
     if len(maxims)!=len(minims):
         maxims,minims=pym.getMaxsMins(star_mass,200,50)
     if len(maxims)!=len(minims):
+        print flabel
+        print maxims,minims
         raise IndexError('Found different number of maximumns and minimums\nTry modifying the comparison ranges')
 
     recurrence=star_age[maxims[1:]]-star_age[maxims[:-1]]

@@ -3,7 +3,11 @@ sys.path.append('/home/oriol/Documentos/pyMESA')
 import pyMESAutils as pym
 import pyMESAplotutils as pymp
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
+mpl.rcParams['font.size'] = 12
+mpl.rcParams['legend.fontsize'] = 'large'
+mpl.rcParams['figure.titlesize'] = 'medium'
 from cycler import cycler
 import matplotlib.lines as mlines
 from NuGridPy import mesa as ms
@@ -24,7 +28,7 @@ args=p.parse_args()  # parse arguments
 nonmetals=['h1','h2','h3','he3','he4']
 bcycler=plt.rcParams['axes.prop_cycle']
 bcolors=[p['color'] for p in plt.rcParams['axes.prop_cycle']]
-fcolors=['b','g','r','m','k']
+fcolors=['k','b','g','r','c']
 linestyle=['-','--','-.',':',(0,(5, 1.5, 1, 1.5, 1, 1.5))]
 fcycler=cycler(color=fcolors,linestyle=linestyle)
 if not(args.labels):
@@ -71,6 +75,7 @@ def load_ejecta_txt(name,cols):
 
 legf=[]
 legf2=[]
+show_lab=True
 for fname,flab,fcyc in zip(args.filenames,args.labels,fcycler()):
     #analyze_list=['o14','o15','o16','o17','ne20','ne22']
     fcolor=fcyc['color']
@@ -97,9 +102,10 @@ for fname,flab,fcyc in zip(args.filenames,args.labels,fcycler()):
         pymp.plotAbunByA(ax1bis,analyze_list,ejected_mass[j,analyze_indexs],color=fcolor,solar=False)
         #pymp.plotAbunText(ax1,abun_list,ejected_mass[j,:],amasses,color=colors[j],solar=False)
         pymp.plotAbunByA(ax2,analyze_list,ejected_mass[j,analyze_indexs],color=bcolor,ls=fline,solar=True)
-        pymp.plotAbunByA(ax2bis,analyze_list,ejected_mass[j,analyze_indexs],color=fcolor,solar=True)
+        pymp.plotAbunByA(ax2bis,analyze_list,ejected_mass[j,analyze_indexs],color=fcolor,solar=True,labels=show_lab)
         #pymp.plotAbunText(ax2,abun_list,ejected_mass[j,:],amasses,color=colors[j],solar=True)
         total=0
+        show_lab=False
         for i,iso in enumerate(abun_list):
             if iso not in nonmetals:
                 metallicity[j]+=ejected_mass[j,i]
