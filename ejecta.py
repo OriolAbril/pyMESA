@@ -12,6 +12,9 @@ import argparse as arp  # command line parsing module and help
 p=arp.ArgumentParser(description='Script to save and plot data from nova bursts simulated with MESA')
 p.add_argument('filename', help='Name of the files to save')
 p.add_argument('-f', '--folder', help='Name of the log folder', default='LOGS')
+p.add_argument('-b', '--bursts', help='Number of bursts to find', default=10,type=int)
+p.add_argument('-r', '--range', help='Range for the subroutine that finds the maximums and\
+               minimums',type=int,nargs=2,default=[100,10])
 args=p.parse_args()  # parse arguments
 
 log_fold=args.folder
@@ -40,13 +43,16 @@ star_age=hdata[:,hcols['star_age']-1]
 model_numbers=hdata[:,hcols['model_number']-1]
 star_mass=hdata[:,hcols['star_mass']-1]
 hlength=len(star_age)
-maxims,minims=pym.getMaxsMins(star_mass,100,10)
+maxims,minims=pym.getMaxsMins(star_mass,args.range[0],args.range[1],num_bursts=args.bursts)
+#if len(maxims)!=len(minims):
+#    maxims,minims=pym.getMaxsMins(star_mass,50,5)
+#    print '50'
+#if len(maxims)!=len(minims):
+#    maxims,minims=pym.getMaxsMins(star_mass,500,50)
+#    print '500'
 if len(maxims)!=len(minims):
-    maxims,minims=pym.getMaxsMins(star_mass,50,5)
-if len(maxims)!=len(minims):
-    maxims,minims=pym.getMaxsMins(star_mass,500,50)
-if len(maxims)!=len(minims):
-    raise IndexError('Found different number of maximumns and minimums\nTry modifying the comparison ranges')
+    raise IndexError('Found different number of maximumns (%d) and minimums(%d)\nTry modifying the\
+            comparison ranges' %(len(maxims),len(minims)))
 
 recurrence=star_age[maxims[1:]]-star_age[maxims[:-1]]
 print 'Recurrence time:', recurrence

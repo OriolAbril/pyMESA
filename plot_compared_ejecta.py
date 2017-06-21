@@ -98,10 +98,10 @@ for fname,flab,fcyc in zip(args.filenames,args.labels,fcycler()):
     for j,bcyc in zip(xrange(num_bursts),bcycler()):
         bcolor=bcyc['color']
         legb.append(mlines.Line2D([], [], color=bcolor, label='Burst num %d' %(j+1)))
-        pymp.plotAbunByA(ax1,analyze_list,ejected_mass[j,analyze_indexs],color=bcolor,ls=fline,solar=False)
-        pymp.plotAbunByA(ax1bis,analyze_list,ejected_mass[j,analyze_indexs],color=fcolor,solar=False)
+        pymp.plotAbunByA(ax1,analyze_list,ejected_mass[j,analyze_indexs],color=bcolor,ls=fline,solar=False,labels=show_lab)
+        pymp.plotAbunByA(ax1bis,analyze_list,ejected_mass[j,analyze_indexs],color=fcolor,solar=False,labels=show_lab)
         #pymp.plotAbunText(ax1,abun_list,ejected_mass[j,:],amasses,color=colors[j],solar=False)
-        pymp.plotAbunByA(ax2,analyze_list,ejected_mass[j,analyze_indexs],color=bcolor,ls=fline,solar=True)
+        pymp.plotAbunByA(ax2,analyze_list,ejected_mass[j,analyze_indexs],color=bcolor,ls=fline,solar=True,labels=show_lab)
         pymp.plotAbunByA(ax2bis,analyze_list,ejected_mass[j,analyze_indexs],color=fcolor,solar=True,labels=show_lab)
         #pymp.plotAbunText(ax2,abun_list,ejected_mass[j,:],amasses,color=colors[j],solar=True)
         total=0

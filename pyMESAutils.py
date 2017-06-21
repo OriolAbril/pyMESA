@@ -198,6 +198,7 @@ def getExtremes(data,rng=50,maximums=True,minimums=True):
                 minims.append(k)
                 memory=value*1
         k+=1
+    #print maxims, minims
     return maxims, minims
 
 def readProfileFast(name): # created from nugridpy function _read_mesafile
@@ -230,9 +231,22 @@ def readProfileFast(name): # created from nugridpy function _read_mesafile
     f.close()
     return hdr, cols, data
 
-def getMaxsMins(array,len1,len2):
+def getMaxsMins(array,len1,len2,num_bursts=None):
     maxims, minims=getExtremes(array, rng=len1)
-    #print maxims,minims
+    if num_bursts!=None:
+        print num_bursts
+        if len(maxims)!=num_bursts:
+            maxims2, minims2=getExtremes(array, rng=len2)
+            if maxims[0]!=maxims2[0]:
+                print 'hello max'
+                maxims=[maxims2[0]]+maxims
+        if len(minims)!=num_bursts:
+            maxims2, minims2=getExtremes(array, rng=len2)
+            if minims[-1]!=minims2[-1]:
+                print 'hello min'
+                minims+=[minims2[-1]]
+        return maxims,minims
+    print maxims,minims
     if len(maxims)==len(minims)-1:
         maxims2, minims2=getExtremes(array, rng=len2)
         try:
@@ -247,9 +261,11 @@ def getMaxsMins(array,len1,len2):
         try:
             if minims[-1]!=minims2[-1]:
                 minims+=[minims2[-1]]
+            elif maxims[0]!=maxims2[0]:
+                maxims=[maxims2[0]]+maxims
             else:
                 maxims=maxims[:-1]
         except IndexError:
             maxims=maxims[:-1]
-    #print maxims,minims
+    print maxims,minims
     return maxims,minims

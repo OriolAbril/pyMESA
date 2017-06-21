@@ -10,7 +10,7 @@ mpl.rcParams['font.size'] = 12
 mpl.rcParams['legend.fontsize'] = 'large'
 mpl.rcParams['figure.titlesize'] = 'medium'
 import matplotlib.lines as mlines
-from matplotlib.ticker import FormatStrFormatter
+import matplotlib.ticker as tik
 from NuGridPy import mesa as ms
 import re
 from astropy import constants
@@ -34,9 +34,9 @@ fig2=plt.figure(2)
 ax21=fig2.add_axes([0.2,0.55,0.7,0.35])
 ax22=fig2.add_axes([0.2,0.15,0.7,0.35], sharex=ax21)
 fig3=plt.figure(3)
-ax3=fig3.add_axes([0.1,0.13,0.83,0.77])
+ax3=fig3.add_axes([0.13,0.13,0.83,0.77])
 fig31=plt.figure(6)
-ax31=fig31.add_axes([0.1,0.13,0.83,0.77])
+ax31=fig31.add_axes([0.13,0.13,0.83,0.77])
 fig4=plt.figure(4)
 ax4=fig4.add_axes([0.15,0.13,0.77,0.77])
 fig5=plt.figure(5)
@@ -67,8 +67,8 @@ for flabel,log_fold,fcyc in zip(args.labels,args.folder,fcycler()):
     recurrence=star_age[maxims[1:]]-star_age[maxims[:-1]]
     eject_mass=star_mass[maxims]-star_mass[minims]
 
-    ax1.plot(star_age,star_mass,label=flabel)
-    ax1.plot(star_age[maxims],star_mass[maxims],'+k',star_age[minims],star_mass[minims],'*k')
+    ax1.plot(star_age,star_mass,label=flabel,color=fcolor)
+    #ax1.plot(star_age[maxims],star_mass[maxims],'+k',star_age[minims],star_mass[minims],'*k')
     
     bursts=np.arange(len(maxims))+actual_burst
     if args.concatenate:
@@ -96,7 +96,9 @@ for j in range(10):
 ax1.legend()
 ax1.set_xlabel('Star age (years)')
 ax1.set_ylabel('Star mass ($M_{\odot}$)')
-ax1.xaxis.set_major_formatter(FormatStrFormatter('%.1e'))
+#ax1.xaxis.set_major_formatter(FormatStrFormatter('%.1e'))
+ax1.xaxis.set_major_formatter(mpl.ticker.ScalarFormatter(useMathText=True, useOffset=False))
+ax1.yaxis.set_major_formatter(mpl.ticker.ScalarFormatter(useMathText=True, useOffset=False))
 ax1.grid(True)
 ax21.grid(True)
 ax21.legend()
@@ -104,7 +106,7 @@ ax21.set_ylabel('Recurrence time\n(years)')
 plt.setp(ax21.get_xticklabels(), visible=False)
 ax21.xaxis.set_ticks_position('none')
 ax22.grid(True)
-ax22.yaxis.set_major_formatter(FormatStrFormatter('%.2e'))
+ax22.yaxis.set_major_formatter(tik.FormatStrFormatter('%.2e'))
 ax22.set_xlabel('Burst number')
 ax22.set_ylabel('Ejected mass ($M_{\odot}$)')
 ax3.grid(True)
@@ -114,21 +116,21 @@ ax3.legend(handles=leg2,loc='lower left')
 #ax3.set_ylim([-3,8.5])
 #ax3.set_xlim([4.5,7])
 ax3.invert_xaxis()
-ax3.set_xlabel('$\log(T_{eff})$')
-ax3.set_ylabel('$\log(L)$')
+ax3.set_xlabel('$\log(T_{eff})$ (K)')
+ax3.set_ylabel('$\log(L)$ $(L_{\odot})$')
 ax31.grid(True)
 ax31.legend()
 ax31.invert_xaxis()
-ax31.set_xlabel('$\log(T_{eff})$')
-ax31.set_ylabel('$\log(L)$')
+ax31.set_xlabel('$\log(T_{eff})$ (K)')
+ax31.set_ylabel('$\log(L)$ $(L_{\odot})$')
 ax4.legend()
 ax4.set_xlabel('Star age (years)')
 ax4.set_ylabel('$\log(T_{eff})$')
-ax4.xaxis.set_major_formatter(FormatStrFormatter('%.1e'))
+ax4.xaxis.set_major_formatter(tik.FormatStrFormatter('%.1e'))
 ax4.grid(True)
 ax5.legend()
 ax5.set_xlabel('Star age (years)')
 ax5.set_ylabel('$\log(L)$')
-ax5.xaxis.set_major_formatter(FormatStrFormatter('%.1e'))
+ax5.xaxis.set_major_formatter(tik.FormatStrFormatter('%.1e'))
 ax5.grid(True)
 plt.show()
