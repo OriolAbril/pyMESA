@@ -88,10 +88,12 @@ for flabel,log_fold,fcyc in zip(args.labels,args.folder,fcycler()):
     ax5.plot(star_age,log_L,linewidth=1,label=flabel,color=fcolor)
 
 # Create a legend for the first line.
-first_legend=ax3.legend(handles=leg, handlelength=3, loc='upper right')
+if args.labels[0]!='':
+    first_legend=ax3.legend(handles=leg, handlelength=3, loc='upper right')
+    ax = ax3.add_artist(first_legend)
 leg2=[]
 colors=[p['color'] for p in plt.rcParams['axes.prop_cycle']]
-for j in range(10):
+for j in range(len(maxims)):
     leg2.append(mlines.Line2D([], [], linestyle='-', color=colors[j],linewidth=1,  label='burst num %d' %(j+1)))
 ax1.legend()
 ax1.set_xlabel('Star age (years)')
@@ -111,7 +113,6 @@ ax22.set_xlabel('Burst number')
 ax22.set_ylabel('Ejected mass ($M_{\odot}$)')
 ax3.grid(True)
 # Add the legend manually to the current Axes.
-ax = ax3.add_artist(first_legend)
 ax3.legend(handles=leg2,loc='lower left')
 #ax3.set_ylim([-3,8.5])
 #ax3.set_xlim([4.5,7])
@@ -125,12 +126,12 @@ ax31.set_xlabel('$\log(T_{eff})$ (K)')
 ax31.set_ylabel('$\log(L)$ $(L_{\odot})$')
 ax4.legend()
 ax4.set_xlabel('Star age (years)')
-ax4.set_ylabel('$\log(T_{eff})$')
+ax4.set_ylabel('$\log(T_{eff})$ (K)')
 ax4.xaxis.set_major_formatter(tik.FormatStrFormatter('%.1e'))
 ax4.grid(True)
 ax5.legend()
 ax5.set_xlabel('Star age (years)')
-ax5.set_ylabel('$\log(L)$')
+ax5.set_ylabel('$\log(L)$ $(L_{\odot})$')
 ax5.xaxis.set_major_formatter(tik.FormatStrFormatter('%.1e'))
 ax5.grid(True)
 plt.show()
