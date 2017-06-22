@@ -67,9 +67,9 @@ plt.subplot(211)
 plt.plot(x[:-1],recurrence,'o-')
 plt.subplot(212)
 plt.plot(x,eject_mass,'o-')
-plt.figure(3)
 log_Teff=hdata[:,hcols['log_Teff']-1]
 log_L=hdata[:,hcols['log_L']-1]
+plt.figure(3)
 plt.plot(log_Teff[:minims[0]],log_L[:minims[0]],label='burst num %d' %1)
 for i in range(len(minims)-1):
     plt.plot(log_Teff[minims[i]:minims[i+1]],log_L[minims[i]:minims[i+1]], label='burst num %d' %(i+2))
@@ -135,7 +135,7 @@ for j,burst in enumerate(burstsind):
         wsum=0
         modejecta=np.zeros(len(abun_list))
         eject=False
-        noeject=0
+        noeject=1
         for cell,speed in enumerate(data[:,cols['velocity']]):
             M=(1.-10.**data[cell,cols['logxq']])*star_mass*Msun
             escapev=np.sqrt(2.*G*M/(data[cell,cols['radius']]*Rsun))
@@ -155,7 +155,7 @@ for j,burst in enumerate(burstsind):
                 #pym.terminal_print([(iso,data[cell,cols[iso]]) for iso in abun_list])
             else:
                 noeject+=1
-                if noeject>10:
+                if noeject>1:
                     #print(len(w), cell)
                     break
         if eject:
