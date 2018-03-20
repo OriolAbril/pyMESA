@@ -68,7 +68,7 @@ else: # set plot variables and configuration
     mpl=(not(args.np) and not(args.pqg))
     if (mpl or args.eps!='noeps'):  # import and initialize matplotlib
         import matplotlib
-        #matplotlib.use('TKAgg')
+        matplotlib.use('Qt5Agg')
         matplotlib.rcParams['lines.linewidth'] = args.linewidth
         import matplotlib.font_manager as fnt
         import matplotlib.pyplot as plt
@@ -110,7 +110,7 @@ else: # set plot variables and configuration
         pw.showGrid(x=True, y=True, alpha=0.5)
 
 # it is placed here in order to happen after importing matplotlib
-from NuGridPy import mesa as ms  
+import nugridpy.mesa as ms  
 
 colcount=0  # overall plot counter, used for color
 legcount=0  # legend label counter
