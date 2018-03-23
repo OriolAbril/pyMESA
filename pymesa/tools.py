@@ -107,27 +107,54 @@ stable_isos = [ 'h1','h2','he3','he4','li6','li7','be9','b10',
         'hg200','hg201','hg202','hg204','tl203','tl205','pb204','pb206',
         'pb207','pb208','bi209','th232','u235','u238']
 
-def terminal_print(iterable, sort=True, order='descending', columns=0):
+def read_mesafile(filename,only_hdr=False,**kwargs):
+    r'''
+    Function to read either history or profile .data files and return 2 
+    pandas dataframes, the header and the body data.
+    
+    Parameters:
+    -----------
+    
+    filename : str
+        Name of the file. Can contain the path.
+    
+    only_hdr : boolean,  default False.
+        Return only header data.
+    
+    kwargs : 
+        Keyword argumets passed to pandas.read_csv when
+        reading the body data.
+    '''
+    
+    header_attr = pd.read_csv(filename,delim_whitespace=True,skiprows=1,nrows=1)
+    if only_hdr:
+        return header_attr
+
+    data = pd.read_csv(filename,delim_whitespace=True,skiprows=5,**kwargs)
+    
+    return header_attr, data
+
+def terminal_print(iterable, sort=True, order='descending', columns='auto'):
     '''
     Print a list organized in columns, following the style of the ls command
     
     Parameters:
     -----------
-        iterable : list or tuple
-            the iterable containing all the elements that have to be printed
-        sort : boolean
-            whether or not to sort the elements in iterable
-        order : ('descending' | 'right')
-            the options for the descending parameter are descending and right.
-            it choses which one is used first
-        columns = int
-            Number of columns of the printed list, columns=0 sets the number of 
-            columns in order to fix their width to the maximum length of the 
-            strings in iterable plus 5
+    iterable : list or tuple
+        iterable containing all the elements that have to be printed
+    sort : boolean, default True
+        sort the elements in iterable
+    order : ('descending' | 'right'), default 'descending'
+        the options for the descending parameter are descending and right.
+        it choses which one is used first
+    columns = int or 'auto', default 'auto'
+        Number of columns of the printed list, 'auto' sets the number of 
+        columns in order to fix their width to the maximum length of the 
+        strings in iterable plus 5
     '''
     screenwidth=140
     maxwidth=max([len(str(chunk)) for chunk in iterable])
-    if columns==0:
+    if columns=='auto':
         columns=screenwidth/(maxwidth+5)
     colwidth=max(maxwidth+1,screenwidth/columns)
     formatlist=['{:<%d}' %colwidth for i in xrange(columns-1)]
@@ -201,35 +228,6 @@ def getExtremes(data,rng=50,maximums=True,minimums=True):
     #print maxims, minims
     return maxims, minims
 
-def readProfileFast(name): # created from nugridpy function _read_mesafile
-    f=open(name,'r')
-    lines=[f.readline() for line in xrange(6)]
-    hval  = lines[2].split()
-    hlist = lines[1].split()
-    hdr = {}
-    for a,b in zip(hlist,hval):
-        hdr[a] = float(b)
-
-    cols    = {}
-    colname = lines[5].split()
-    for b,a in enumerate(colname):
-        cols[a] = b
-
-    num_zones=int(hval[hlist.index('num_zones')])
-    data = np.empty((num_zones, len(colname)),dtype='float64')
-    for i in range(num_zones):
-        line = f.readline()
-        v=line.split()
-        try:
-            data[i,:]=np.array(v,dtype='float64')
-        except ValueError:
-            for item in v:
-                if item.__contains__('.') and not item.__contains__('E'):
-                    v[v.index(item)]='0'
-            data[i,:]=np.array(v,dtype='float64')
-
-    f.close()
-    return hdr, cols, data
 
 def getMaxsMins(array,len1,len2,num_bursts=None):
     maxims, minims=getExtremes(array, rng=len1)
