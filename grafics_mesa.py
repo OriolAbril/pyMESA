@@ -2,9 +2,10 @@
 import argparse as arp  # command line parsing module and help
 import numpy as np 
 import re  # regular expressions
-import sys
-sys.path.append('/home/oriol/Documentos/pyMESA')
-import pyMESAutils as pym
+import sys,os
+scriptpath=os.path.dirname(os.path.realpath(__file__))
+sys.path.append(scriptpath+'/../')
+import pyMESA.tools as pym
 
 p=arp.ArgumentParser(prog='MESA_grafics', description='Script to plot data from the .data output files from MESA')
 p.add_argument('--version', action='version', version='%(prog)s 0.3')
