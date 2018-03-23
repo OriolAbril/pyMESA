@@ -1,11 +1,12 @@
 # import libraries
 import argparse as arp  # command line parsing module and help
 import numpy as np 
+import pandas as pd
 import re  # regular expressions
 import sys,os
 scriptpath=os.path.dirname(os.path.realpath(__file__))
-sys.path.append(scriptpath+'/../')
-import pyMESA.tools as pym
+sys.path.append(scriptpath)
+import pymesa.tools as pym
 
 p=arp.ArgumentParser(prog='MESA_grafics', description='Script to plot data from the .data output files from MESA')
 p.add_argument('--version', action='version', version='%(prog)s 0.3')
@@ -51,6 +52,8 @@ if args.headers: # set variables for header mode
         args.order='descending'
     if args.order=='r':
         args.order='right'
+    if args.terminalcols==0:
+        args.terminalcols='auto'
 else: # set plot variables and configuration
     if len(args.files)!=len(args.columns):
         args.columns=[args.columns[0]]*len(args.files)
@@ -110,20 +113,17 @@ else: # set plot variables and configuration
         pw.addLegend()  # legend must be set here in order to be "filled"
         pw.showGrid(x=True, y=True, alpha=0.5)
 
-# it is placed here in order to happen after importing matplotlib
-import nugridpy.mesa as ms  
-
 colcount=0  # overall plot counter, used for color
 legcount=0  # legend label counter
 fpat=re.compile(r'(?P<nom>[^/\.]+)\.')  # regular expression to obtain the name of the file without extension
 for filecount, doc in enumerate(args.files): #loop over each file
-    length=pym.file_len(doc)
-    hdr, cols, data=ms._read_mesafile(doc, length-6)
     if args.headers:  # print headers
+        hdr, data=pym.read_mesafile(doc)
         print doc
-        pym.terminal_print(cols.keys(), columns=args.terminalcols, order=args.order)
+        pym.terminal_print(data.columns, columns=args.terminalcols, order=args.order)
     else: 
         docols=[col for col in re.split(',', args.columns[filecount])]  # get headers to plot
+        hdr, data=pym.read_mesafile(doc, usecols=docols)
         numplots=len(docols)-1
         if args.legend:  # check legend labels
             leg=args.legend[legcount:legcount+numplots]
@@ -132,9 +132,9 @@ for filecount, doc in enumerate(args.files): #loop over each file
             leg=['']*numplots
             for numpl, pl in enumerate(docols[1:]):
                 leg[numpl]=pl
-        x=data[:, cols[docols[0]]-1].astype('float')  # set x values to first parsed column 
+        x=data[docols[0]].astype('float')  # set x values to first parsed column 
         for i in range(numplots):
-            y=data[:, cols[docols[i+1]]-1].astype('float')
+            y=data[docols[i+1]].astype('float')
             if args.pqg:
                 if args.colors:
                     pw.plot(x, y, pen=pqg.mkPen(args.colors[colcount]), name=leg[i])
