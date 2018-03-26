@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from itertools import izip_longest
-import re
+import re,os
 
 abunPat = re.compile(r'([a-z]{1,3})([0-9]{1,3})$',re.IGNORECASE)
 elements=['neut', 'h', 'he', 'li', 'be', 'b', 'c', 'n', 'o', 'f', 'ne', 'na', 'mg', 'al', 'si', 'p',
@@ -153,7 +153,8 @@ def terminal_print(iterable, sort=True, order='descending', columns='auto'):
         columns in order to fix their width to the maximum length of the 
         strings in iterable plus 5
     '''
-    screenwidth=140
+    rows, screenwidth=os.popen('stty size', 'r').read().split()
+    screenwidth = int(screenwidth)
     maxwidth=max([len(str(chunk)) for chunk in iterable])
     if columns=='auto':
         columns=screenwidth/(maxwidth+5)
