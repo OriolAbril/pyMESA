@@ -39,8 +39,10 @@ pltpar.add_argument('-lw', '--linewidth', help='Set linewidth of matplotlib plot
                     type=float)
 pltpar.add_argument('-t', '--title', help='Title of the plot', type=str, default='')
 pltpar.add_argument('-lt', '--legtit', help='Title for the legend', type=str, default='')
-pltpar.add_argument('-l', '--legend', help='Labels for the legend. Default text is name of file without extension',
+pltpar.add_argument('-l', '--legend', help='Labels for the legend. Default text is name of y data column.',
                     nargs='+')
+pltpar.add_argument('-lp', '--legprefix', help='Prefix for the legend labels. If present, legprefix must\
+                    have the same length as files and legend as the number of columns minus one',nargs='+')
 pltpar.add_argument('-xl', '--xlabel', help='Label of the x axis', type=str)
 pltpar.add_argument('-yl', '--ylabel', help='Label of the y axis', type=str, default='')
 pltpar.add_argument('-x', '--xaxis', help='Set the xaxis limits', nargs=2, type=float)
@@ -65,10 +67,12 @@ else: # set plot variables and configuration
         args.scale='logxy'
     if not(args.xlabel):
         args.xlabel=args.columns[0].split(',')[0]
-    colo=['blue', 'black', 'red', 'green', 'yellow', 'cyan', 'magenta']*3  # set default colors
-    if args.colors:  # if flag -co present, overwrite default colors
-        for colnum,col in enumerate(args.colors):
-            colo[colnum]=col
+    if args.legprefix:
+        y_columns = args.columns[0].split(',')[1:]
+        if (len(args.files)==len(args.legprefix) and not args.legend):
+            args.legend=[pre+lab for pre in args.legprefix for lab in y_columns]
+        elif len(args.legend)==len(y_columns):
+            args.legend=[pre+lab for pre in args.legprefix for lab in args.legend]
     mpl=(not(args.np) and not(args.pqg))
     if (mpl or args.eps!='noeps'):  # import and initialize matplotlib
         import matplotlib
@@ -79,8 +83,12 @@ else: # set plot variables and configuration
         if not(args.offset):
             import matplotlib.ticker as tk
             marques=tk.ScalarFormatter(useOffset=False)
+        colo=(plt.rcParams['axes.prop_cycle'].by_key()['color'])*3  # set default colors
+        if args.colors:  # if flag -co present, overwrite default colors
+            for colnum,col in enumerate(args.colors):
+                colo[colnum]=col
         fig=plt.figure(1)
-        graf=fig.add_axes([0.18, 0.12, 0.75, 0.8])
+        graf=fig.add_subplot(111)
     if args.pqg: # import PyQtGraph if specified
         import PyQt5
         from pyqtgraph.Qt import QtGui, QtCore
@@ -162,9 +170,10 @@ if not(args.headers):
         if (args.scale=='logy' or args.scale=='logxy'):
             graf.set_yscale('log')
         # set title, grid and legend
-        fig.suptitle(args.title)
+        graf.set_title(args.title)
         graf.grid(True)
-        graf.legend(loc='lower left', prop=fnt.FontProperties(size='medium'), title=args.legtit)
+        graf.legend(loc='best', prop=fnt.FontProperties(size='medium'), title=args.legtit)
+        fig.tight_layout()
     if args.eps!='noeps':  # save figure
         if args.eps!='sieps':  # save figure with specified name, extension is checked
             seed=fpat.search(args.eps) 
