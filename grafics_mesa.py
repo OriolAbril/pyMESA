@@ -7,9 +7,43 @@ import sys,os
 scriptpath=os.path.dirname(os.path.realpath(__file__))
 sys.path.append(scriptpath)
 import pymesa.tools as pym
+import pymesa.plot_tools as pymp
 
-p=arp.ArgumentParser(prog='MESA_grafics', description='Script to plot data from the .data output files from MESA')
-p.add_argument('--version', action='version', version='%(prog)s 0.3')
+class matplotlibScale(arp.Action):
+    def __init__(self,
+                 option_strings,
+                 dest,
+                 nargs=None,
+                 const=None,
+                 default=None,
+                 type=None,
+                 choices=None,
+                 required=False,
+                 help=None,
+                 metavar=None):
+        arp.Action.__init__(self,
+                                 option_strings=option_strings,
+                                 dest=dest,
+                                 nargs=nargs,
+                                 const=const,
+                                 default=default,
+                                 type=type,
+                                 choices=choices,
+                                 required=required,
+                                 help=help,
+                                 metavar=metavar)
+
+    def __call__(self, parser, namespace, value, option_string=None):
+        yscale = 'log' if value in ['logy','loglog','logxy'] else 'linear'
+        xscale = 'log' if value in ['logx','loglog','logxy'] else 'linear'
+        # Save the results in the namespace using the destination
+        # variable given to our constructor.
+        setattr(namespace, 'yscale', yscale)
+        setattr(namespace, 'xscale', xscale)
+        delattr(namespace, 'scale')
+
+p=arp.ArgumentParser(prog='MESA_grafics',description='Script to plot data from the .data output files from MESA')
+p.add_argument('--version', action='version', version='%(prog)s 1.0')
 p.add_argument('files', metavar='FILES', help='Name of the .data type file/s with the extension', nargs='+')
 group=p.add_mutually_exclusive_group(required=True)
 group.add_argument('-c', '--columns', help='Columns to be plotted, the first one will be used as x values.\
@@ -32,7 +66,7 @@ pltpar.add_argument('-off', '--offset', help='Use matplotlib''s default offest i
 pltpar.add_argument('-eps', help='Write matplotlib plot as an Encapsulated PostScript. The name can be specified',
                     type=str, nargs='?', default='noeps', const='sieps')
 pltpar.add_argument('-sc', '--scale', help='Choose the scale between: liner, semilogy, semilogx or logxy',
-                    type=str, choices=['lin', 'logy', 'logx', 'loglog', 'logxy'])
+                    type=str, default='lin', choices=['lin', 'logy', 'logx', 'loglog', 'logxy'], action=matplotlibScale)
 pltpar.add_argument('-co', '--colors', help='Colors to be used in the plot, they must be valid matplotlib colors',
                     nargs='+')
 pltpar.add_argument('-lw', '--linewidth', help='Set linewidth of matplotlib plots', default=1,
@@ -45,26 +79,23 @@ pltpar.add_argument('-lp', '--legprefix', help='Prefix for the legend labels. If
                     have the same length as files and legend as the number of columns minus one',nargs='+')
 pltpar.add_argument('-xl', '--xlabel', help='Label of the x axis', type=str)
 pltpar.add_argument('-yl', '--ylabel', help='Label of the y axis', type=str, default='')
-pltpar.add_argument('-x', '--xaxis', help='Set the xaxis limits', nargs=2, type=float)
-pltpar.add_argument('-y', '--yaxis', help='Set the yaxis limits', nargs=2, type=float)
+pltpar.add_argument('-x', '--xlim', help='Set the xaxis limits', nargs=2, type=float)
+pltpar.add_argument('-y', '--ylim', help='Set the yaxis limits', nargs=2, type=float)
 args=p.parse_args()  # parse arguments
 
 if args.headers: # set variables for header mode
-    if args.order=='d':
-        args.order='descending'
-    if args.order=='r':
-        args.order='right'
-    if args.terminalcols==0:
-        args.terminalcols='auto'
+    args.order= 'descending' if args.order[0]=='d' else 'right'
+    args.terminalcols= 'auto' if args.terminalcols==0 else args.terminalcols
+
 else: # set plot variables and configuration
+    try:
+        args.xscale
+    except AttributeError:
+        setattr(args, 'xscale', 'lin')
+        setattr(args, 'yscale', 'lin')
     if len(args.files)!=len(args.columns):
         args.columns=[args.columns[0]]*len(args.files)
-    allplots=0
-    comapat=re.compile(',')
-    for comas in [comapat.findall(i) for i in args.columns]:
-        allplots+=len(comas)
-    if args.scale=='loglog':
-        args.scale='logxy'
+    allplots = sum([len(k.split(','))-1 for k in args.columns])
     if not(args.xlabel):
         args.xlabel=args.columns[0].split(',')[0]
     if args.legprefix:
@@ -73,8 +104,8 @@ else: # set plot variables and configuration
             args.legend=[pre+lab for pre in args.legprefix for lab in y_columns]
         elif len(args.legend)==len(y_columns):
             args.legend=[pre+lab for pre in args.legprefix for lab in args.legend]
-    mpl=(not(args.np) and not(args.pqg))
-    if (mpl or args.eps!='noeps'):  # import and initialize matplotlib
+    mpl=(not(args.np) and not(args.pqg)) or args.eps!='noeps'
+    if mpl:  # import and initialize matplotlib
         import matplotlib
         matplotlib.use('Qt5Agg')
         matplotlib.rcParams['lines.linewidth'] = args.linewidth
@@ -83,45 +114,26 @@ else: # set plot variables and configuration
         if not(args.offset):
             import matplotlib.ticker as tk
             marques=tk.ScalarFormatter(useOffset=False)
-        colo=(plt.rcParams['axes.prop_cycle'].by_key()['color'])*3  # set default colors
+        colo = (plt.rcParams['axes.prop_cycle'].by_key()['color'])*3
         if args.colors:  # if flag -co present, overwrite default colors
-            for colnum,col in enumerate(args.colors):
-                colo[colnum]=col
+            colo[:len(args.colors)] = args.colors
         fig=plt.figure(1)
-        graf=fig.add_subplot(111)
+        mpl_keys = ('title','xlim','xlabel','xscale','ylim','ylabel','yscale')
+        axes_kwargs = {k: args.__dict__[k] for k in mpl_keys 
+                       if k in args.__dict__ and args.__dict__[k]}
+        graf=fig.add_subplot(111,**axes_kwargs)
     if args.pqg: # import PyQtGraph if specified
-        import PyQt5
-        from pyqtgraph.Qt import QtGui, QtCore
         import pyqtgraph as pqg
-        ## Switch to using white background and black foreground
-        pqg.setConfigOption('background', 'w')
-        pqg.setConfigOption('foreground', 'k')
-        app = QtGui.QApplication([])  # initialize Qt
-        mw = QtGui.QMainWindow()  # initialize main window
-        mw.setWindowTitle('pyMESA') #set window title
-        # initialize widget and layout
-        cw = QtGui.QWidget()
-        mw.setCentralWidget(cw)
-        l = QtGui.QVBoxLayout()
-        cw.setLayout(l)
-        # create plot and add it to main widget
-        pw = pqg.PlotWidget(enableMenu=True)
-        l.addWidget(pw)
-        pw.setLabel('left', args.ylabel)
-        pw.setLabel('bottom', args.xlabel)
-        if args.xaxis:
-            pw.setRange(xRange=args.xaxis)
-            if args.xaxis[0]>args.xaxis[1]:
-                pw.invertX(True)
-        if args.yaxis:
-            pw.setRange(yRange=args.yaxis)
-            if args.yaxis[0]>args.yaxis[1]:
-                pw.invertY(True)
-        pw.setTitle(args.title)
-        pw.addLegend()  # legend must be set here in order to be "filled"
-        pw.showGrid(x=True, y=True, alpha=0.5)
+        pqgPlot = pymp.pqgCustomPlot(title=args.title,
+                              xlabel=args.xlabel,
+                              ylabel=args.ylabel,
+                              xrng=args.xlim,
+                              yrng=args.ylim,
+                              xlogscale=True if args.xscale=='log' else False,
+                              ylogscale=True if args.yscale=='log' else False)
+        pqgPlot.set_pqgWindow()
 
-colcount=0  # overall plot counter, used for color
+colcount=0  # overall plot counter, used for pqg color
 legcount=0  # legend label counter
 fpat=re.compile(r'(?P<nom>[^/\.]+)\.')  # regular expression to obtain the name of the file without extension
 for filecount, doc in enumerate(args.files): #loop over each file
@@ -145,32 +157,18 @@ for filecount, doc in enumerate(args.files): #loop over each file
             y=data[docols[i+1]].astype('float')
             if args.pqg:
                 if args.colors:
-                    pw.plot(x, y, pen=pqg.mkPen(args.colors[colcount]), name=leg[i])
+                    pqgPlot.plot(x, y, color=args.colors[colcount], label=leg[i])
                 else:
-                    pw.plot(x, y, pen=(colcount, allplots), name=leg[i])
-            if (mpl or args.eps!='noeps'):
+                    pqgPlot.plot(x, y, color=(colcount, max(allplots,9)), label=leg[i])
+            if mpl:
                 graf.plot(x, y, color=colo[colcount], label=leg[i])
             colcount+=1
+
 if not(args.headers):
-    if (mpl or args.eps!='noeps'):
-        # set axis labels and limits
-        if args.xlabel:
-            graf.set_xlabel(args.xlabel)
-        graf.set_ylabel(args.ylabel)
-        if args.yaxis: 
-            graf.set_ylim(args.yaxis)
-        if args.xaxis:
-            graf.set_xlim(args.xaxis)
+    if mpl:
         if not(args.offset):
             graf.yaxis.set_major_formatter(marques)  # set axis marker format
             graf.xaxis.set_major_formatter(marques) 
-        # set axis scale
-        if (args.scale=='logx' or args.scale=='logxy'):
-            graf.set_xscale('log')
-        if (args.scale=='logy' or args.scale=='logxy'):
-            graf.set_yscale('log')
-        # set title, grid and legend
-        graf.set_title(args.title)
         graf.grid(True)
         graf.legend(loc='best', prop=fnt.FontProperties(size='medium'), title=args.legtit)
         fig.tight_layout()
@@ -190,10 +188,6 @@ if not(args.headers):
         fig.savefig(figname, format='eps', dpi=1000)
     if not(args.np):
         if args.pqg:
-            ## Display the widget as a new window
-            pw.update()
-            mw.show()
-            ## Start the Qt event loop
-            app.exec_()
+            pqgPlot.show_pqgWindow()
         else:    
             plt.show()  # show figure with matplotlib
