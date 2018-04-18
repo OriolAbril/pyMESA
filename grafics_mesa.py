@@ -7,7 +7,6 @@ import sys,os
 scriptpath=os.path.dirname(os.path.realpath(__file__))
 sys.path.append(scriptpath)
 import pymesa.tools as pym
-import pymesa.plot_tools as pymp
 
 class matplotlibScale(arp.Action):
     def __init__(self,
@@ -91,8 +90,8 @@ else: # set plot variables and configuration
     try:
         args.xscale
     except AttributeError:
-        setattr(args, 'xscale', 'lin')
-        setattr(args, 'yscale', 'lin')
+        setattr(args, 'xscale', 'linear')
+        setattr(args, 'yscale', 'linear')
     if len(args.files)!=len(args.columns):
         args.columns=[args.columns[0]]*len(args.files)
     allplots = sum([len(k.split(','))-1 for k in args.columns])
@@ -123,7 +122,7 @@ else: # set plot variables and configuration
                        if k in args.__dict__ and args.__dict__[k]}
         graf=fig.add_subplot(111,**axes_kwargs)
     if args.pqg: # import PyQtGraph if specified
-        import pyqtgraph as pqg
+        import pymesa.plot_tools as pymp
         pqgPlot = pymp.pqgCustomPlot(title=args.title,
                               xlabel=args.xlabel,
                               ylabel=args.ylabel,

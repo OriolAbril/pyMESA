@@ -52,9 +52,9 @@ def terminal_print(iterable, sort=True, order='descending', columns='auto'):
     screenwidth = int(screenwidth)
     maxwidth=max([len(str(chunk)) for chunk in iterable])
     if columns=='auto':
-        columns=screenwidth/(maxwidth+5)
-    colwidth=max(maxwidth+1,screenwidth/columns)
-    formatlist=['{:<%d}' %colwidth for i in xrange(columns-1)]
+        columns=screenwidth//(maxwidth+5)
+    colwidth=max(maxwidth+1,screenwidth//columns)
+    formatlist=['{{:<{}}}'.format(colwidth) for i in range(columns-1)]
     formatlist.append('{:<}')
     formatstr=''.join(formatlist)
     if sort:
@@ -64,14 +64,14 @@ def terminal_print(iterable, sort=True, order='descending', columns='auto'):
             print(name)
     else:
         if order=='descending':
-            col_len=len(iterable)/columns*np.arange(0,columns)
+            col_len=len(iterable)//columns*np.arange(0,columns)
             for i in range(len(iterable)%columns):
                 col_len[i:]+=1
             col_len=np.append(col_len,None)
-            args=[iterable[col_len[i]:col_len[i+1]] for i in xrange(columns)]
+            args=[iterable[col_len[i]:col_len[i+1]] for i in range(columns)]
         if order=='right':
-            args=[iterable[i::columns] for i in xrange(columns)]
-        for name in izip_longest(*args, fillvalue=''):
+            args=[iterable[i::columns] for i in range(columns)]
+        for name in zip_longest(*args, fillvalue=''):
             print(formatstr.format(*name))
 
 def checkElement(el):
