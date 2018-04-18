@@ -9,6 +9,8 @@ In order to be able to import the functions, the path of the repository has to b
     sys.path.append('/path/to/pyMESA/')
     import pymesa.tools as pym
 
+There is also the option of using `PYTHONPATH` instead, see this [link](http://www.mantidproject.org/Using_Modules) for more info.
+
 Many of the codes use already existing libraries to import and plot data 
 from MESA results:
 - [mesaPlot](https://github.com/rjfarmer/mesaplot)
