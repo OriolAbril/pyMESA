@@ -139,7 +139,7 @@ fpat=re.compile(r'(?P<nom>[^/\.]+)\.')  # regular expression to obtain the name 
 for filecount, doc in enumerate(args.files): #loop over each file
     if args.headers:  # print headers
         hdr, data=pym.read_mesafile(doc)
-        print doc
+        print(doc)
         pym.terminal_print(data.columns, columns=args.terminalcols, order=args.order)
     else: 
         docols=[col for col in re.split(',', args.columns[filecount])]  # get headers to plot
