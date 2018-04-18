@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from itertools import izip_longest
+from itertools import zip_longest
 import re,os
 
 def read_mesafile(filename,only_hdr=False,**kwargs):
