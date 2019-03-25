@@ -21,16 +21,16 @@ class matplotlibScale(arp.Action):
                  help=None,
                  metavar=None):
         arp.Action.__init__(self,
-                                 option_strings=option_strings,
-                                 dest=dest,
-                                 nargs=nargs,
-                                 const=const,
-                                 default=default,
-                                 type=type,
-                                 choices=choices,
-                                 required=required,
-                                 help=help,
-                                 metavar=metavar)
+                            option_strings=option_strings,
+                            dest=dest,
+                            nargs=nargs,
+                            const=const,
+                            default=default,
+                            type=type,
+                            choices=choices,
+                            required=required,
+                            help=help,
+                            metavar=metavar)
 
     def __call__(self, parser, namespace, value, option_string=None):
         yscale = 'log' if value in ['logy','loglog','logxy'] else 'linear'
@@ -42,7 +42,7 @@ class matplotlibScale(arp.Action):
         delattr(namespace, 'scale')
 
 p=arp.ArgumentParser(prog='MESA_grafics',description='Script to plot data from the .data output files from MESA')
-p.add_argument('--version', action='version', version='%(prog)s 1.0')
+p.add_argument('--version', action='version', version='%(prog)s 2.1')
 p.add_argument('files', metavar='FILES', help='Name of the .data type file/s with the extension', nargs='+')
 group=p.add_mutually_exclusive_group(required=True)
 group.add_argument('-c', '--columns', help='Columns to be plotted, the first one will be used as x values.\
